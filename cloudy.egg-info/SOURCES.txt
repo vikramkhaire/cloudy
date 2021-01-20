@@ -1,0 +1,6 @@
+setup.py
+cloudy.egg-info/PKG-INFO
+cloudy.egg-info/SOURCES.txt
+cloudy.egg-info/dependency_links.txt
+cloudy.egg-info/requires.txt
+cloudy.egg-info/top_level.txt
