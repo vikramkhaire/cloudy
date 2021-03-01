@@ -31,7 +31,7 @@ def get_true_model(model_path, Q= 18, logZ = -1, uvb = 'KS18'):
 
 #----model interpolation
 def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
-    logZ = np.around(np.arange(-3, 1, 0.05), decimals = 2) # hardcoded
+    logZ = np.around(np.arange(-2, 1, 0.2), decimals = 2) # hardcoded
     #get nH array
     logZ_try = -1
     model_try = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ_try+4)*100)
@@ -97,19 +97,33 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     truths = [-4, -1]  # (lognH, logZ, logT) true values
     number_of_ions = len(ions_to_use)
 
-    data_col_all = get_true_model(model_path, Q=true_Q)
-    # converting astropy table row to a list
-    data_col = []
-    for name in ions_to_use:
-        data_col.append(data_col_all[name][0])
+    data_col = np.array([15.87, 13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
+    sigma_col = np.array([0.15, 0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
 
-    np.random.seed(0)
-    if same_error:
-        sigma_col = 0.2 * np.ones(number_of_ions)
-    else:
-        sigma_col = np.random.uniform(0.01, 0.2, number_of_ions)
+#    print(data_col, sigma_col)
+    
+    
+#    ionname = list()
+#    data_col = list()
+#    sigma_col = list()
+#    f = open('/home/jarvis-astro/cloudy_run/ion list.txt','r')
+#    for line in f:
+#        line = line.strip('"')
+#        columns = line.split('"')
+#        ionname_val = str(columns[0])
+#        ionname.append(ionname_val)
+#        data_col_val = float(columns[1])
+#        data_col.append(data_col_val)
+#        sigma_col_val = float(columns[2])
+#        sigma_col.append(sigma_col_val)
+#    f.close() 
+#    ionname = np.asarray(ionname,dtype=str)
+#    data_col = np.asarray(data_col,dtype=float)
+#    sigma_col = np.asarray(sigma_col,dtype=float)
+#    print('Ion Name: ', ionname)
+    print('Observed Column Density: ', data_col)
+    print('Error in Observed Column Density: ', sigma_col)
 
-    print(np.log10(data_col), sigma_col)
 
     interp_logf = get_interp_func(model_path = model_path, ions_to_use = ions_to_use, Q_uvb = Q_uvb, uvb = uvb)
 
@@ -127,7 +141,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, np.log10(data_col), sigma_col))
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
@@ -163,15 +177,18 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
 
 
 
-ions_to_use= ['C+3', 'N+3', 'Si+3', 'O+5', 'C+2']
+
+
+
+ions_to_use= ['H', 'C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
 true_Q =18
 
-outpath = '/home/vikram/cloudy_run/figures/rescaled'
-model_path  = '/home/vikram/cloudy_run/rescaled_metal_NH15'
-outfile = outpath + '/rescaled_NH15_metal_2D.fits'
+outpath = '/home/jarvis-astro/cloudy_run/figures'
+model_path  = '/home/jarvis-astro/cloudy_run/metal_NH15'
+outfile = outpath + '/metal_NH15_2D.fits'
 
-uvb_array = ['KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'P19', 'FG20', 'HM12']
-Q_array= [14, 15, 16, 17, 18, 19, 20, 18, 18, 18]
+uvb_array = ['KS18']
+Q_array= [18]
 
 out_tab =  tab.Table()
 for uvb, q in zip(uvb_array, Q_array):
@@ -198,7 +215,7 @@ for uvb, q in zip(uvb_array, Q_array):
 
 
 
-uvb_column = ['Q14', 'Q15', 'Q16', 'Q17', 'Q18', 'Q19', 'Q20', 'P19', 'FG20', 'HM12']
+uvb_column = ['Q18']
 out_tab.add_column(uvb_column, name = 'uvb')
 
 out_tab.write(outfile, overwrite = True)
