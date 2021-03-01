@@ -12,7 +12,7 @@ import os
 import numpy as np
 import astropy.table as tab
 import subprocess
-from cgm_uvb.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
+from cloudy.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
 
 def find_nearest_index(array, value):
     array = np.asarray(array)
