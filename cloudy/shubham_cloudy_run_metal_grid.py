@@ -15,18 +15,18 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 #-----------------
-from cgm_uvb.cloudy_run import write_input
-from cgm_uvb.cloudy_run import run
-from cgm_uvb.cloudy_run import store_table
-from cgm_uvb.cloudy_run import cloudy_params_defaults
+from cloudy.shubham_cloudy_run import write_input
+from cloudy.shubham_cloudy_run import run
+from cloudy.shubham_cloudy_run import store_table
+from cloudy.shubham_cloudy_run import cloudy_params_defaults
 import multiprocessing as mp
 import numpy as np
-from cgm_uvb.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
+from cloudy.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
 import astropy.table as tab
 
-def uvb_files(file_path, **kwargs):
+def uvb_files(file_name, **kwargs):
     if kwargs['uvb'] == 'FG20':
-        path_to_store = file_path
+        path_to_store = os.path.dirname(file_name)
         ebl_file_name =  'ebl_fg20_z{:.2f}.txt'.format(kwargs['z'])
         ebl_file_name_with_path = path_to_store + '/' + ebl_file_name
         fg20_file_path_and_name = os.getcwd() + '/paper_plots/fg20_fits_files' + '/FG20_EBL_z_{:.2f}.fits'.format(kwargs['z'])
@@ -40,7 +40,7 @@ def uvb_files(file_path, **kwargs):
         print(uvb_statement)
 
     if kwargs['uvb'] == 'P19':
-        path_to_store = file_path
+        path_to_store = os.path.dirname(file_name)
         ebl_file_name =  'ebl_p19_z{:.2f}.txt'.format(kwargs['z'])
         ebl_file_name_with_path = path_to_store + '/' + ebl_file_name
         p19_file_path_and_name = os.getcwd() + '/paper_plots/p19_ebl' + '/P19_EBL_z_{:.2f}.fits'.format(kwargs['z'])
@@ -58,16 +58,17 @@ def uvb_files(file_path, **kwargs):
 
     return
 
+
 def run_parallel(logZ, uvb_Q, uvb):
-    # for vikram
-    cloudy_path = '/home/vikram/c17.02'
-    fname = (logZ+4)*100
-    input_File = '/mnt/quasar2/vikram/cloudy_run/metal_NH19_new/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
+    # for shubham
+    cloudy_path = '/home/jarvis-astro/cloudy17.02'
+    fname = (logZ + 4) * 100
+    input_File = '/home/jarvis-astro/cloudy_run/metal_NH15/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ)
 
     # write input file and run cloudy
-    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-6, -2, 0.02], stop_NHI = 19, T = None, metal = logZ,
-                                          sequential = True)
+    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-5, -3, 0.2], stop_NHI = 15.87, T = None, metal = logZ,
+                                          sequential = True, z=0.39053)
     write_input(input_File, *ions, **params)
     run(cloudy_path=cloudy_path, input_file=input_File)
 
@@ -80,9 +81,9 @@ def run_parallel(logZ, uvb_Q, uvb):
 
 # runnning in parallel
 #uvb_array= [14, 15, 16, 17, 18, 19, 20]
-logZ_array = np.around(np.arange(-3, 1, 0.05), decimals = 2)
-uvb = ['KS18', 'HM12',  'P19', 'FG20']
-uvb_Q = [14, 15, 16, 17, 18, 19, 20]
+logZ_array = np.around(np.arange(-2, 1, 0.2), decimals = 2)
+uvb = ['KS18']
+uvb_Q = [18]
 
 logZ = []
 uvb_models =[]
@@ -102,8 +103,7 @@ for background in uvb:
             logZ.append(metal)
 
 #-----write uvb fg and hm in cloudy format first
-path = '/mnt/quasar2/vikram/cloudy_run/metal_NH19_new'
-
+path = '/home/jarvis-astro/cloudy_run/metal_NH15/'
 kwagrs = {'uvb' : 'P19', 'z' : 0.2}
 uvb_files(path, **kwagrs)
 
@@ -111,7 +111,22 @@ kwagrs = {'uvb' : 'FG20', 'z' : 0.2}
 uvb_files(path, **kwagrs)
 
 
-pool = mp.Pool(processes=60)
+pool = mp.Pool(processes=4)
 results = [pool.apply_async(run_parallel, args=(Z, Q, mod,)) for  Z, Q, mod in zip(logZ, the_Q_values, uvb_models)]
 output = [p.get() for p in results]
 
+"""
+uvb_Q=18
+cloudy_path = '/home/jarvis-astro/cloudy17.02'
+input_File = '/home/jarvis-astro/cloudy_run/metal_NH15/try.in'
+
+# write input file and run cloudy
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 0.2], z = 0.39053)
+write_input(input_File, *ions, **params)
+run(cloudy_path= cloudy_path, input_file= input_File)
+
+# write output tables
+output_filename =  input_File.split('.in')[0] + '.spC'
+fits_filename = input_File.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
+store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
+"""
