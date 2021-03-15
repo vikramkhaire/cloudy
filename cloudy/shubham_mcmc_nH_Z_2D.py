@@ -97,8 +97,8 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     truths = [-4, -1]  # (lognH, logZ, logT) true values
     number_of_ions = len(ions_to_use)
 
-    data_col = np.array([15.87, 13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
-    sigma_col = np.array([0.15, 0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
+    data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
+    sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
 
 #    print(data_col, sigma_col)
     
@@ -138,6 +138,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     # set theta near the maximum likelihood, with
     n_guess = np.random.uniform(-5, -3, nwalkers)
     z_guess = np.random.uniform(-2, 0, nwalkers)
+    np.random.seed(0)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
@@ -153,11 +154,11 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     # we are discarding some initial steps roughly 5 times the autocorr_time steps
     # then we thin by about half the autocorrelation time steps for plotting => one does not have to do this step
 
-    labels = ['log nH', 'log Z']
+    labels = ['log nH (in cm$\mathregular{^{-3}}$)', 'log Z (in $Z_{\odot}$)']
     #uvb_q= int((model_Q.split('try_Q')[-1]).split('.fits')[0])
 
     if Q_uvb == true_Q:
-        fig = corner.corner(flat_samples, labels=labels, truths=truths, quantiles=[0.16, 0.5, 0.84],
+        fig = corner.corner(flat_samples, labels=labels, quantiles=[0.16, 0.5, 0.84],
             show_titles=True, title_kwargs={"fontsize": 12})
     else:
         fig = corner.corner(flat_samples, labels=labels, quantiles=[0.16, 0.5, 0.84],
@@ -180,7 +181,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
 
 
 
-ions_to_use= ['H', 'C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
+ions_to_use= ['C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
 true_Q =18
 
 outpath = '/home/jarvis-astro/cloudy_run/figures'
