@@ -67,8 +67,8 @@ def run_parallel(logZ, uvb_Q, uvb):
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ)
 
     # write input file and run cloudy
-    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-5, -3, 0.2], stop_NHI = 15.87, T = None, metal = logZ,
-                                          sequential = True, z=0.39053)
+    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-5, -3, 0.2], stop_NHI = 15.86, T = None, metal = logZ,
+                                          sequential = True, z=0.39047)
     write_input(input_File, *ions, **params)
     run(cloudy_path=cloudy_path, input_file=input_File)
 
@@ -121,7 +121,7 @@ cloudy_path = '/home/jarvis-astro/cloudy17.02'
 input_File = '/home/jarvis-astro/cloudy_run/metal_NH15/try.in'
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 0.2], z = 0.39053)
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 0.2], z = 0.39047)
 write_input(input_File, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_File)
 
