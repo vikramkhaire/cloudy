@@ -79,49 +79,42 @@ def log_likelihood(theta, interp_logf, obs_ion_col, col_err):
     return lnL
 
 #def log_prior(theta, interp_logf, obs_ion_col):
-def log_prior(theta, model_path):
-#    logZ_try = -1
-    uvb = 'KS18'
-    Q_uvb = 18
-#    model_try = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ_try+4)*100)
-#    model = tab.Table.read(model_try)
-#    logSII = np.log10(np.array(model['S+']))
-    ion= ['S+']
+def log_prior(theta, interp_logf_for_limits, limit_col):
     lognH, logZ =  theta
-    z = np.zeros(1)
-    logSII = []
-    model = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ+4)*100)
-    d = tab.Table.read(model)
-    d[ion][d[ion] == 0 ] = 1e-15 # for avoiding log10 (0) error
-    z = np.log10(d[ion]) #--- for log - log interpolation
-    f = interp2d(lognH, logZ, z.T)
-    logSII.append(f)
-#    for i in range(len(obs_ion_col)):
-#        logcol_mod = interp_logf[i](lognH, logZ)[0]
-#        logcol.append(logcol_mod)
-#    logcol_1 = np.array(logcol)
-#    logSII = logcol_1['S+']
+
+    # finding column densities of ions used as limits in prior
+    limit_col_mod = []
+    for i in range(len(interp_logf_for_limits)):
+        logcol = interp_logf_for_limits[i](lognH, logZ)[0]
+        limit_col_mod.append(logcol)
+
+    # todo for shubham
+    """
+    if_condition below should take all elements one by one and compare with the limit values
+    if its only on element SII
+    then if_condition is "limin_col[0] << limit_col[0]"
+    """
+
     # flat prior
-    if -6 < lognH < -2 and -3 < logZ < 1 :
-        if logSII < 14.4:
+    if -6 < lognH < -2 and -3 < logZ < 1 and  if_condition:
             return 0.0
     return -np.inf
 
-def log_posterior(theta, interp_func, data_col, sigma_col):
-    log_p = log_prior(theta, model_path = model_path) + \
+def log_posterior(theta, interp_func, interp_func_for_limits, limit_col, data_col, sigma_col):
+    log_p = log_prior(theta, interp_logf_for_limits = interp_func_for_limits, limit_col =limit_col) + \
             log_likelihood(theta, interp_logf = interp_func, obs_ion_col = data_col, col_err = sigma_col)
 
     return log_p
 
 
-def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
+def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
     # run_mcmc(model_Q= model, ions_to_use= ions)
     # ------------------ here is a way to run code
-    truths = [-4, -1]  # (lognH, logZ, logT) true values
-    number_of_ions = len(ions_to_use)
+
 
     data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
     sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
+    limit_col = np.array([])
 
 #    print(data_col, sigma_col)
     
@@ -149,6 +142,9 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
 
 
     interp_logf = get_interp_func(model_path = model_path, ions_to_use = ions_to_use, Q_uvb = Q_uvb, uvb = uvb)
+    interp_logf_for_limits = get_interp_func(model_path = model_path, ions_to_use = ions_to_use_for_limits,
+                                             Q_uvb = Q_uvb, uvb = uvb)
+
 
     # Here we'll set up the computation. emcee combines multiple "walkers",
     # each of which is its own MCMC chain. The number of trace results will
@@ -165,7 +161,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, data_col, sigma_col))
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_limits, limit_col, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
@@ -205,6 +201,8 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
 
 
 ions_to_use= ['C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
+ions_to_use_for_limits= ['S+']
+
 true_Q =18
 
 outpath = '/home/jarvis-astro/cloudy_run/figures'
@@ -219,8 +217,9 @@ for uvb, q in zip(uvb_array, Q_array):
     name =uvb + '_Q{}'.format(q)
     figname = outpath + '/' + name + '.pdf'
 
-    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use, true_Q=true_Q,
-        figname=figname, uvb = uvb)
+    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
+                                  ions_to_use_for_limits=ions_to_use_for_limits, true_Q=true_Q,
+                                  figname=figname, uvb = uvb)
     # to efficiently save numpy array
     save_file_name = outpath + '/' + name
     np.save(save_file_name, flat_samples)
