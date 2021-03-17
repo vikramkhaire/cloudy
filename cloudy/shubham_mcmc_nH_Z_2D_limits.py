@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar  3 18:11:10 2021
-
 @author: jarvis-astro
 """
 
@@ -79,7 +78,7 @@ def log_likelihood(theta, interp_logf, obs_ion_col, col_err):
     return lnL
 
 #def log_prior(theta, interp_logf, obs_ion_col):
-def log_prior(theta, interp_logf_for_limits, limit_col):
+def log_prior(theta, interp_logf_for_limits, data_col_limits):
     lognH, logZ =  theta
 
     # finding column densities of ions used as limits in prior
@@ -87,6 +86,7 @@ def log_prior(theta, interp_logf_for_limits, limit_col):
     for i in range(len(interp_logf_for_limits)):
         logcol = interp_logf_for_limits[i](lognH, logZ)[0]
         limit_col_mod.append(logcol)
+    limit_col = np.array(limit_col_mod)
 
     # todo for shubham
     """
@@ -94,14 +94,23 @@ def log_prior(theta, interp_logf_for_limits, limit_col):
     if its only on element SII
     then if_condition is "limin_col[0] << limit_col[0]"
     """
+#    for i in range(len(interp_logf_for_limits)):
+#        condition = limit_col[i] < data_col_limits[i]
+#        condition_array = condition.all()
+    condition = limit_col < data_col_limits
+    condition_array = condition.all()
+    
 
     # flat prior
-    if -6 < lognH < -2 and -3 < logZ < 1 and  if_condition:
+    if -6 < lognH < -2 and -3 < logZ < 1 and condition_array == True:
             return 0.0
+    # flat prior
+#    if -6 < lognH < -2 and -3 < logZ < 1 and  if_condition:
+#            return 0.0
     return -np.inf
 
-def log_posterior(theta, interp_func, interp_func_for_limits, limit_col, data_col, sigma_col):
-    log_p = log_prior(theta, interp_logf_for_limits = interp_func_for_limits, limit_col =limit_col) + \
+def log_posterior(theta, interp_func, interp_func_for_limits, data_col_limits, data_col, sigma_col):
+    log_p = log_prior(theta, interp_logf_for_limits = interp_func_for_limits, data_col_limits=data_col_limits) + \
             log_likelihood(theta, interp_logf = interp_func, obs_ion_col = data_col, col_err = sigma_col)
 
     return log_p
@@ -112,9 +121,9 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
     # ------------------ here is a way to run code
 
 
-    data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
-    sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
-    limit_col = np.array([])
+#    data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
+#    sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
+#    limit_col = np.array([])
 
 #    print(data_col, sigma_col)
     
@@ -157,11 +166,11 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
     # set theta near the maximum likelihood, with
     n_guess = np.random.uniform(-5, -3, nwalkers)
     z_guess = np.random.uniform(-2, 0, nwalkers)
-    np.random.seed(0)
+    np.random.seed(10000)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_limits, limit_col, data_col, sigma_col))
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_limits, data_col_limits, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
@@ -201,7 +210,10 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
 
 
 ions_to_use= ['C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
-ions_to_use_for_limits= ['S+']
+data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
+sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
+ions_to_use_for_limits = ['S+']
+data_col_limits = np.array([14.4])
 
 true_Q =18
 
@@ -247,26 +259,20 @@ out_tab.write(outfile, overwrite = True)
 """
 ions_to_use= ['C+3', 'N+3', 'Si+3', 'O+5', 'C+2']
 true_Q =18
-
 outpath = '/home/vikram/cloudy_run/figures/2DLLS'
 model_path  = '/home/vikram/cloudy_run/metal_NH19'
 outfile = outpath + '/NH19_metal_2D.fits'
-
-
 uvb_array = ['KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'KS18', 'P19', 'FG20', 'HM12']
 Q_array= [14, 15, 16, 17, 18, 19, 20, 18, 18, 18]
-
 out_tab =  tab.Table()
 for uvb, q in zip(uvb_array, Q_array):
     name =uvb + '_Q{}'.format(q)
     figname = outpath + '/' + name + '.pdf'
-
     flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use, true_Q=true_Q,
         figname=figname, uvb = uvb)
     # to efficiently save numpy array
     save_file_name = outpath + '/' + name
     np.save(save_file_name, flat_samples)
-
     out =[[q]]
     for i in range(ndim):
         mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
@@ -274,15 +280,10 @@ for uvb, q in zip(uvb_array, Q_array):
         out.append([mcmc[1]])
         out.append([q[0]])
         out.append([q[1]])
-
     print(out)
     t = tab.Table(out, names = ('Q', 'nH', 'n16', 'n84', 'Z', 'Z16', 'Z84'))
     out_tab = tab.vstack((out_tab, t))
-
-
-
 uvb_column = ['Q14', 'Q15', 'Q16', 'Q17', 'Q18', 'Q19', 'Q20', 'P19', 'FG20', 'HM12']
 out_tab.add_column(uvb_column, name = 'uvb')
-
 out_tab.write(outfile, overwrite = True)
 """
