@@ -181,14 +181,14 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
 
 
 
-ions_to_use= ['C+', 'Si+', 'C+2', 'Si+2', 'N+2']
-data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47])
-sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76])
+ions_to_use= ['Si+', 'N+2', 'C+']
+data_col = np.array([14.47,14.5,14.79])
+sigma_col = np.array([0.14,0.02,0.02])
 true_Q =18
 
 outpath = '/home/jarvis-astro/cloudy_run/figures'
-model_path  = '/home/jarvis-astro/cloudy_run/metal_NH15'
-outfile = outpath + '/metal_NH15_2D.fits'
+model_path  = '/home/jarvis-astro/cloudy_run/metal_NH18'
+outfile = outpath + '/metal_NH18_2D.fits'
 
 uvb_array = ['KS18']
 Q_array= [18]
