@@ -78,45 +78,54 @@ def log_likelihood(theta, interp_logf, obs_ion_col, col_err):
     return lnL
 
 #def log_prior(theta, interp_logf, obs_ion_col):
-def log_prior(theta, interp_logf_for_limits, data_col_limits):
+def log_prior(theta, interp_logf_for_lower_limit, data_col_lower_limit, interp_logf_for_upper_limit, data_col_upper_limit):
     lognH, logZ =  theta
 
     # finding column densities of ions used as limits in prior
-    limit_col_mod = []
-    for i in range(len(interp_logf_for_limits)):
-        logcol = interp_logf_for_limits[i](lognH, logZ)[0]
-        limit_col_mod.append(logcol)
-    limit_col = np.array(limit_col_mod)
+    lower_limit_col_mod = []
+    for i in range(len(interp_logf_for_lower_limit)):
+        logcol_lower = interp_logf_for_lower_limit[i](lognH, logZ)[0]
+        lower_limit_col_mod.append(logcol_lower)
+    lower_limit_col = np.array(lower_limit_col_mod)
+    
+    upper_limit_col_mod = []
+    for j in range(len(interp_logf_for_upper_limit)):
+        logcol_upper = interp_logf_for_upper_limit[j](lognH, logZ)[0]
+        upper_limit_col_mod.append(logcol_upper)
+    upper_limit_col = np.array(upper_limit_col_mod)
 
     # todo for shubham
     """
     if_condition below should take all elements one by one and compare with the limit values
     if its only on element SII
-    then if_condition is "limin_col[0] << limit_col[0]"
+    then if_condition is "limit_col[0] < limit_col[0]"
     """
 #    for i in range(len(interp_logf_for_limits)):
 #        condition = limit_col[i] < data_col_limits[i]
 #        condition_array = condition.all()
-    condition = limit_col < data_col_limits
-    condition_array = condition.all()
+    condition_lower = lower_limit_col < data_col_lower_limit
+    condition_array_lower = condition_lower.all()
+    
+    condition_upper = upper_limit_col > data_col_upper_limit
+    condition_array_upper = condition_upper.all()
     
 
     # flat prior
-    if -6 < lognH < -2 and -3 < logZ < 1 and condition_array == True:
+    if -6 < lognH < -2 and -3 < logZ < 1 and condition_array_lower == True and condition_array_upper == True:
             return 0.0
     # flat prior
 #    if -6 < lognH < -2 and -3 < logZ < 1 and  if_condition:
 #            return 0.0
     return -np.inf
 
-def log_posterior(theta, interp_func, interp_func_for_limits, data_col_limits, data_col, sigma_col):
-    log_p = log_prior(theta, interp_logf_for_limits = interp_func_for_limits, data_col_limits=data_col_limits) + \
+def log_posterior(theta, interp_func, interp_func_for_lower_limit, interp_func_for_upper_limit, data_col_lower_limit, data_col_upper_limit, data_col, sigma_col):
+    log_p = log_prior(theta, interp_logf_for_lower_limit = interp_func_for_lower_limit, data_col_lower_limit=data_col_lower_limit, interp_logf_for_upper_limit = interp_func_for_upper_limit, data_col_upper_limit=data_col_upper_limit) + \
             log_likelihood(theta, interp_logf = interp_func, obs_ion_col = data_col, col_err = sigma_col)
 
     return log_p
 
 
-def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
+def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None, ions_to_use_for_upper_limit = None, data_col=None, data_col_lower_limit=None, data_col_upper_limit=None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
     # run_mcmc(model_Q= model, ions_to_use= ions)
     # ------------------ here is a way to run code
 
@@ -151,7 +160,9 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
 
 
     interp_logf = get_interp_func(model_path = model_path, ions_to_use = ions_to_use, Q_uvb = Q_uvb, uvb = uvb)
-    interp_logf_for_limits = get_interp_func(model_path = model_path, ions_to_use = ions_to_use_for_limits,
+    interp_logf_for_lower_limit = get_interp_func(model_path = model_path, ions_to_use = ions_to_use_for_lower_limit,
+                                             Q_uvb = Q_uvb, uvb = uvb)
+    interp_logf_for_upper_limit = get_interp_func(model_path = model_path, ions_to_use = ions_to_use_for_upper_limit,
                                              Q_uvb = Q_uvb, uvb = uvb)
 
 
@@ -170,7 +181,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_limits, data_col_limits, data_col, sigma_col))
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_lower_limit, data_col_lower_limit, interp_logf_for_upper_limit, data_col_upper_limit, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
@@ -209,17 +220,19 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_limits = None, true
 
 
 
-ions_to_use= ['C+', 'Si+', 'C+2', 'Si+2', 'N+2', 'O+5']
-data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
-sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
-ions_to_use_for_limits = ['S+']
-data_col_limits = np.array([14.4])
+ions_to_use= ['Si+', 'N+2', 'C+']
+data_col = np.array([14.47, 14.5, 14.79])
+sigma_col = np.array([0.14, 0.02, 0.02])
+ions_to_use_for_lower_limit = ['N+4', 'S+', 'S+2', 'S+3', 'S+5', 'Fe+']
+data_col_lower_limit = np.array([13.4, 14.4, 14.0, 13.7, 12.8, 11.4])
+ions_to_use_for_upper_limit = ['C+2', 'Si+2']
+data_col_upper_limit = np.array([14.5, 14.0])
 
 true_Q =18
 
 outpath = '/home/jarvis-astro/cloudy_run/figures'
-model_path  = '/home/jarvis-astro/cloudy_run/metal_NH15'
-outfile = outpath + '/metal_NH15_2D.fits'
+model_path  = '/home/jarvis-astro/cloudy_run/metal_NH18'
+outfile = outpath + '/metal_NH18_2D.fits'
 
 uvb_array = ['KS18']
 Q_array= [18]
@@ -230,8 +243,9 @@ for uvb, q in zip(uvb_array, Q_array):
     figname = outpath + '/' + name + '.pdf'
 
     flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
-                                  ions_to_use_for_limits=ions_to_use_for_limits, true_Q=true_Q,
-                                  figname=figname, uvb = uvb)
+                                  ions_to_use_for_lower_limit=ions_to_use_for_lower_limit, data_col=data_col,
+                                  ions_to_use_for_upper_limit=ions_to_use_for_upper_limit, data_col_upper_limit=data_col_upper_limit,
+                                  data_col_lower_limit=data_col_lower_limit, true_Q=true_Q, figname=figname, uvb = uvb)
     # to efficiently save numpy array
     save_file_name = outpath + '/' + name
     np.save(save_file_name, flat_samples)
