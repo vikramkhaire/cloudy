@@ -67,6 +67,8 @@ def write_input(file_name, *args, **kwargs):
         f.write(uvb_statement)
 
     if kwargs['uvb'] == 'FG20':
+        # make sure that ebl (ebl_file_name)  is stored in the path (path_to_store) if not if will
+        # call write_uvb_in_cloudy_format to do the job
         path_to_store = os.path.dirname(file_name)
         ebl_file_name =  'ebl_fg20_z{:.2f}.txt'.format(kwargs['z'])
         ebl_file_name_with_path = path_to_store + '/' + ebl_file_name
@@ -88,6 +90,8 @@ def write_input(file_name, *args, **kwargs):
         f.write(norm_statement)
 
     if kwargs['uvb'] == 'P19':
+        # make sure that ebl (ebl_file_name)  is stored in the path (path_to_store) if not if will
+        # call write_uvb_in_cloudy_format to do the job
         path_to_store = os.path.dirname(file_name)
         ebl_file_name =  'ebl_p19_z{:.2f}.txt'.format(kwargs['z'])
         ebl_file_name_with_path = path_to_store + '/' + ebl_file_name
@@ -169,8 +173,24 @@ def write_input(file_name, *args, **kwargs):
 
 
 # this is the part one needs to change if one wants to change the cloudy program
-def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4], hden_vary=True, uvb = 'KS18', z=0.2,
+def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
                            T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False):
+    """
+    :param uvb_Q:
+    :param uvb_scale:
+    :param log_hden: [initial_value, final_value, increment]; works in grid if hden_vary = True; else uses just one value
+        == initial_value
+    :param hden_vary:
+    :param uvb:
+    :param z:
+    :param T: if not None it is taken as constant temperature, else cloudy will calculate from photoionization-thermal
+        equilibrium
+    :param metal:
+    :param stop_NHI:
+    :param abundances:
+    :param sequential: (False) by default allows cloudy to use all the cores in the system else while using multiprocessing make it True
+    :return:
+    """
 
     cloudy_params = {'uvb': uvb, 'z' : z, 'uvb_scale': uvb_scale, 'uvb_Q' : uvb_Q,
                      'hden_vary' : hden_vary,
