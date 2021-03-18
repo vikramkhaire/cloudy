@@ -91,7 +91,7 @@ def log_posterior(theta, interp_func, data_col, sigma_col):
     return log_p
 
 
-def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
+def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
     # run_mcmc(model_Q= model, ions_to_use= ions)
     # ------------------ here is a way to run code
     truths = [-4, -1]  # (lognH, logZ, logT) true values
@@ -138,7 +138,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, true_Q =18, uvb = 'KS18', figname =
     # set theta near the maximum likelihood, with
     n_guess = np.random.uniform(-5, -3, nwalkers)
     z_guess = np.random.uniform(-2, 0, nwalkers)
-    np.random.seed(0)
+    np.random.seed(1)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
@@ -198,8 +198,9 @@ for uvb, q in zip(uvb_array, Q_array):
     name =uvb + '_Q{}'.format(q)
     figname = outpath + '/' + name + '.pdf'
 
-    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use, true_Q=true_Q,
-        figname=figname, uvb = uvb)
+    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
+                                  data_col=data_col, sigma_col=sigma_col, true_Q=true_Q,
+                                  figname=figname, uvb = uvb)
     # to efficiently save numpy array
     save_file_name = outpath + '/' + name
     np.save(save_file_name, flat_samples)
