@@ -118,14 +118,18 @@ def log_prior(theta, interp_logf_for_lower_limit, data_col_lower_limit, interp_l
 #            return 0.0
     return -np.inf
 
-def log_posterior(theta, interp_func, interp_func_for_lower_limit, interp_func_for_upper_limit, data_col_lower_limit, data_col_upper_limit, data_col, sigma_col):
-    log_p = log_prior(theta, interp_logf_for_lower_limit = interp_func_for_lower_limit, data_col_lower_limit=data_col_lower_limit, interp_logf_for_upper_limit = interp_func_for_upper_limit, data_col_upper_limit=data_col_upper_limit) + \
+def log_posterior(theta, interp_func, interp_func_for_lower_limit, interp_func_for_upper_limit, data_col_lower_limit,
+                  data_col_upper_limit, data_col, sigma_col):
+    log_p = log_prior(theta, interp_logf_for_lower_limit = interp_func_for_lower_limit,
+                      data_col_lower_limit=data_col_lower_limit, interp_logf_for_upper_limit = interp_func_for_upper_limit,
+                      data_col_upper_limit=data_col_upper_limit) + \
             log_likelihood(theta, interp_logf = interp_func, obs_ion_col = data_col, col_err = sigma_col)
 
     return log_p
 
 
-def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None, ions_to_use_for_upper_limit = None, data_col=None, data_col_lower_limit=None, data_col_upper_limit=None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
+def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None, ions_to_use_for_upper_limit = None,
+             data_col=None, data_col_lower_limit=None, data_col_upper_limit=None, true_Q =18, uvb = 'KS18', figname = 'testT.pdf', same_error = False):
     # run_mcmc(model_Q= model, ions_to_use= ions)
     # ------------------ here is a way to run code
 
@@ -181,7 +185,9 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None,
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, interp_logf_for_lower_limit, data_col_lower_limit, interp_logf_for_upper_limit, data_col_upper_limit, data_col, sigma_col))
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior,
+                                    args=(interp_logf, interp_logf_for_lower_limit, interp_logf_for_upper_limit,
+                                          data_col_lower_limit, data_col_upper_limit, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
