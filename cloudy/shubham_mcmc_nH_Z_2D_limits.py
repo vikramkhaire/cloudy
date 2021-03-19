@@ -103,10 +103,10 @@ def log_prior(theta, interp_logf_for_lower_limit, data_col_lower_limit, interp_l
 #    for i in range(len(interp_logf_for_limits)):
 #        condition = limit_col[i] < data_col_limits[i]
 #        condition_array = condition.all()
-    condition_lower = lower_limit_col < data_col_lower_limit
+    condition_lower = lower_limit_col > data_col_lower_limit
     condition_array_lower = condition_lower.all()
     
-    condition_upper = upper_limit_col > data_col_upper_limit
+    condition_upper = upper_limit_col < data_col_upper_limit
     condition_array_upper = condition_upper.all()
     
 
@@ -223,10 +223,10 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None,
 ions_to_use= ['Si+', 'N+2', 'C+']
 data_col = np.array([14.47, 14.5, 14.79])
 sigma_col = np.array([0.14, 0.02, 0.02])
-ions_to_use_for_lower_limit = ['N+4', 'S+', 'S+2', 'S+3', 'S+5', 'Fe+']
-data_col_lower_limit = np.array([13.4, 14.4, 14.0, 13.7, 12.8, 11.4])
-ions_to_use_for_upper_limit = ['C+2', 'Si+2']
-data_col_upper_limit = np.array([14.5, 14.0])
+ions_to_use_for_upper_limit = ['N+4', 'S+', 'S+2', 'S+3', 'S+5', 'Fe+']
+data_col_upper_limit = np.array([13.4, 14.4, 14.0, 13.7, 12.8, 11.4])
+ions_to_use_for_lower_limit = ['C+2', 'Si+2']
+data_col_lower_limit = np.array([14.5, 14.0])
 
 true_Q =18
 
