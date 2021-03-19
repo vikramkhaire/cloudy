@@ -101,7 +101,7 @@ def log_prior(theta, interp_logf_for_lower_limit, data_col_lower_limit):
 #    for i in range(len(interp_logf_for_limits)):
 #        condition = limit_col[i] < data_col_limits[i]
 #        condition_array = condition.all()
-    condition_lower = lower_limit_col < data_col_lower_limit
+    condition_lower = lower_limit_col > data_col_lower_limit
     condition_array_lower = condition_lower.all()
     
 
