@@ -4,7 +4,7 @@ grid range from -5 to 0 with 1 dex step
 abundances "solar_GASS10.abn" 
 metals -1.00 log 
 element helium abundance 0.081632653 linear 
-stop column density 15 neutral H 
+stop column density 19 neutral H 
 save hydrogen conditions ".hydro" last no clobber 
 save species column density ".spC" no hash 
 "H" 
