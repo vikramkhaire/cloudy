@@ -1,1 +1,3 @@
 testing the branch
+
+git clone -b cloudy_template git_repo
