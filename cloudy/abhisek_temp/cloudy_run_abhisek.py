@@ -147,7 +147,7 @@ def write_input(file_name, *args, **kwargs):
         optical_depth_statement='{} optical depths \n'.format(kwargs['optical_depth_state'])    
         f.write(optical_depth_statement)
 
-    stop_statement = 'stop column density {} neutral H \n'.format(kwargs['stop_logNHI'])
+    stop_statement = 'stop column density {:.2f} neutral H \n'.format(kwargs['stop_logNHI'])
     f.write(stop_statement)
 
     if kwargs['constant_T'] is not None:
