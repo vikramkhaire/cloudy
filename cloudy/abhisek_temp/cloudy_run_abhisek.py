@@ -296,6 +296,7 @@ output_filename =  input_file.split('.in')[0] + '.spC'
 fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
 store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
 
-
+t1=Table.read('opt_Q18.fits')
+t2=Table.read('noopt_Q18.fits')
 """
 
