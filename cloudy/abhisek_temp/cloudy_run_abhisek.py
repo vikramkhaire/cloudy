@@ -151,6 +151,10 @@ def write_input(file_name, *args, **kwargs):
         geometry_statement='sphere \n'
         f.write(geometry_statement)
 
+    if kwargs['CMB'] is not None:
+        CMB_statement ='CMB [redshift = {}] \n'.format(kwargs['z'])
+        f.write(CMB_statement)
+
     stop_statement = 'stop column density {:.2f} neutral H \n'.format(kwargs['stop_logNHI'])
     f.write(stop_statement)
 
@@ -183,7 +187,7 @@ def write_input(file_name, *args, **kwargs):
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,optical_depth = None, sphere = None):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,optical_depth = None, sphere = None, CMB = None):
     """
     :param uvb_Q:
     :param uvb_scale:
@@ -209,6 +213,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'scale_He': 0.081632653,
                      'optical_depth_state' : optical_depth,
                      'sphere' : sphere,
+                     'CMB' : CMB,
                      'abundances' : abundances,
                      'sequential': sequential}
     print(cloudy_params)
@@ -281,8 +286,8 @@ store_table(ions= ions, output_file= output_filename, fits_filename= fits_filena
 from cloudy_run_abhisek import *
 uvb_Q=18
 cloudy_path = '/home/abhisek/Soft/c17.02'
-input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1])
+input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt_cmb_19.in'
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, 0, 1],CMB='yes',stop_NHI=19)
 write_input(input_file, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_file)
 output_filename =  input_file.split('.in')[0] + '.spC'
