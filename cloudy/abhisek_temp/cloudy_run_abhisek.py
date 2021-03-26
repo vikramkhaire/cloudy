@@ -142,10 +142,14 @@ def write_input(file_name, *args, **kwargs):
     if 'scale_He' in kwargs.keys():
         scale_He_statement ='element helium abundance {} linear \n'.format(kwargs['scale_He'])
         f.write(scale_He_statement)
-     
+
     if kwargs['optical_depth_state'] is not None:
-        optical_depth_statement='{} optical depths \n'.format(kwargs['optical_depth_state'])    
+        optical_depth_statement='{} optical depths \n'.format(kwargs['optical_depth_state'])
         f.write(optical_depth_statement)
+
+    if kwargs['sphere'] is not None:
+        geometry_statement='sphere \n'
+        f.write(geometry_statement)
 
     stop_statement = 'stop column density {:.2f} neutral H \n'.format(kwargs['stop_logNHI'])
     f.write(stop_statement)
@@ -179,7 +183,7 @@ def write_input(file_name, *args, **kwargs):
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = 					False,optical_depth = None):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,optical_depth = None, sphere = None):
     """
     :param uvb_Q:
     :param uvb_scale:
@@ -204,6 +208,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'stop_logNHI': stop_NHI,
                      'scale_He': 0.081632653,
                      'optical_depth_state' : optical_depth,
+                     'sphere' : sphere,
                      'abundances' : abundances,
                      'sequential': sequential}
     print(cloudy_params)
@@ -256,7 +261,7 @@ def store_table(ions, output_file, fits_filename = None):
 
 
 """
-Example run : 
+Example run :
 #----give this
 uvb_Q=20
 cloudy_path = '/home/vikram/c17.02'
@@ -299,4 +304,3 @@ store_table(ions= ions, output_file= output_filename, fits_filename= fits_filena
 t1=Table.read('opt_Q18.fits')
 t2=Table.read('noopt_Q18.fits')
 """
-
