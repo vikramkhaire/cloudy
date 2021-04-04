@@ -4,7 +4,7 @@ import os
 import numpy as np
 import astropy.table as tab
 import subprocess
-from write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
+from cgm_uvb.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
 
 def find_nearest_index(array, value):
     array = np.asarray(array)
@@ -50,7 +50,6 @@ def write_input(file_name, *args, **kwargs):
             scale_He,
             stop_logNHI,
             constant_T,
-            optical_depth_twice,
             out_file_ext
     :return:
     """
@@ -143,19 +142,7 @@ def write_input(file_name, *args, **kwargs):
         scale_He_statement ='element helium abundance {} linear \n'.format(kwargs['scale_He'])
         f.write(scale_He_statement)
 
-    if kwargs['optical_depth_state'] is not None:
-        optical_depth_statement='{} optical depths \n'.format(kwargs['optical_depth_state'])
-        f.write(optical_depth_statement)
-
-    if kwargs['sphere'] is not None:
-        geometry_statement='sphere \n'
-        f.write(geometry_statement)
-
-    if kwargs['CMB'] is not None:
-        CMB_statement ='CMB [redshift = {}] \n'.format(kwargs['z'])
-        f.write(CMB_statement)
-
-    stop_statement = 'stop column density {:.2f} neutral H \n'.format(kwargs['stop_logNHI'])
+    stop_statement = 'stop column density {} neutral H \n'.format(kwargs['stop_logNHI'])
     f.write(stop_statement)
 
     if kwargs['constant_T'] is not None:
@@ -187,7 +174,7 @@ def write_input(file_name, *args, **kwargs):
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,optical_depth = None, sphere = None, CMB = None):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False):
     """
     :param uvb_Q:
     :param uvb_scale:
@@ -211,9 +198,6 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'constant_T': T,
                      'stop_logNHI': stop_NHI,
                      'scale_He': 0.081632653,
-                     'optical_depth_state' : optical_depth,
-                     'sphere' : sphere,
-                     'CMB' : CMB,
                      'abundances' : abundances,
                      'sequential': sequential}
     print(cloudy_params)
@@ -266,7 +250,7 @@ def store_table(ions, output_file, fits_filename = None):
 
 
 """
-Example run :
+Example run : 
 #----give this
 uvb_Q=20
 cloudy_path = '/home/vikram/c17.02'
@@ -274,38 +258,13 @@ input_File = '/home/vikram/cloudy_run/try.in'
 
 # write input file and run cloudy
 ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1])
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
+write_input(input_File, *ions, **params)
+run(cloudy_path= cloudy_path, input_file= input_File)
 
 # write output tables
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
+output_filename =  input_File.split('.in')[0] + '.spC'
+fits_filename = input_File.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
 store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
 
-
-from cloudy_run_abhisek import *
-uvb_Q=18
-cloudy_path = '/home/abhisek/Soft/c17.02'
-input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt_cmb_19.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, 0, 1],CMB='yes',stop_NHI=19)
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
-store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
-
-
-from cloudy_run_abhisek import *
-uvb_Q=18
-cloudy_path = '/home/abhisek/Soft/c17.02'
-input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],optical_depth='double')
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
-store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
-
-t1=Table.read('opt_Q18.fits')
-t2=Table.read('noopt_Q18.fits')
 """
+
