@@ -7,24 +7,10 @@ import emcee
 import corner
 
 
-#----data
-def get_true_model(model_path, Q= 18, logZ = -1, uvb = 'KS18'):
-    """
-    :param model: The data where Q18 model is stored
-    :return: a row of ion column densities at n_H = 1e-4 cm^-2
-    """
-    model = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q, (logZ+4)*100)
-    data = tab.Table.read(model)
-    true_ion_col = data [data['hden'] == 1e-4]
-   # print(true_ion_col)
-
-    return true_ion_col
-
 #----model interpolation
-def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
+def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18', logZ_try = -1):
     logZ = np.around(np.arange(-2, 1, 0.2), decimals = 2) # hardcoded
     #get nH array
-    logZ_try = -1
     model_try = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ_try+4)*100)
     model = tab.Table.read(model_try)
     lognH = np.log10(np.array(model['hden']))
@@ -88,30 +74,6 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     truths = [-4, -1]  # (lognH, logZ, logT) true values
     number_of_ions = len(ions_to_use)
 
-#    data_col = np.array([13.83, 15.38, 14.35, 14.61, 14.47, 14.27])
-#    sigma_col = np.array([0.32, 0.51, 0.04, 0.67, 0.76, 0.12])
-
-#    print(data_col, sigma_col)
-    
-    
-#    ionname = list()
-#    data_col = list()
-#    sigma_col = list()
-#    f = open('/home/jarvis-astro/cloudy_run/ion list.txt','r')
-#    for line in f:
-#        line = line.strip('"')
-#        columns = line.split('"')
-#        ionname_val = str(columns[0])
-#        ionname.append(ionname_val)
-#        data_col_val = float(columns[1])
-#        data_col.append(data_col_val)
-#        sigma_col_val = float(columns[2])
-#        sigma_col.append(sigma_col_val)
-#    f.close() 
-#    ionname = np.asarray(ionname,dtype=str)
-#    data_col = np.asarray(data_col,dtype=float)
-#    sigma_col = np.asarray(sigma_col,dtype=float)
-#    print('Ion Name: ', ionname)
     print('Observed Column Density: ', data_col)
     print('Error in Observed Column Density: ', sigma_col)
 
@@ -132,19 +94,20 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     np.random.seed(1)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
-    # Here's the function call where all the work happens:
+    # Here's the function call where all the work happens:-----------------
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(interp_logf, data_col, sigma_col))
     sampler.run_mcmc(starting_guesses, nsteps, progress=True)
 
     # find out number of steps
     tau = sampler.get_autocorr_time()  # number of steps needed to forget the starting position
     #print(tau)
-    thin = int(np.mean(tau) / 2)  # use this number for flattning the sample as done below
+    thin = int(np.mean(tau) / 2)  # use this number for flattening the sample as done below
     #thin = 100
-    flat_samples = sampler.get_chain(discard=thin * 20, thin= 5, flat=True)
+    flat_samples = sampler.get_chain(discard=thin * 20, thin= thin, flat=True)
     # we are discarding some initial steps roughly 5 times the autocorr_time steps
     # then we thin by about half the autocorrelation time steps for plotting => one does not have to do this step
 
+    #--------------Plotting-------------
     labels = ['log nH (in cm$\mathregular{^{-3}}$)', 'log Z (in $Z_{\odot}$)']
     #uvb_q= int((model_Q.split('try_Q')[-1]).split('.fits')[0])
 
