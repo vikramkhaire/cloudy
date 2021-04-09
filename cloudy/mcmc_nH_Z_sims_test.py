@@ -89,8 +89,8 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     nsteps = 5000  # number of MCMC steps to take
 
     # set theta near the maximum likelihood, with
-    n_guess = np.random.uniform(-5, -3, nwalkers)
-    z_guess = np.random.uniform(-2, 0, nwalkers)
+    n_guess = np.random.uniform(-4.5, -3, nwalkers)
+    z_guess = np.random.uniform(-0.5, 0.5, nwalkers)
     np.random.seed(1)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
 
@@ -103,7 +103,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     #print(tau)
     thin = int(np.mean(tau) / 2)  # use this number for flattening the sample as done below
     #thin = 100
-    flat_samples = sampler.get_chain(discard=thin * 20, thin= thin, flat=True)
+    flat_samples = sampler.get_chain(discard=thin * 20, thin= 5, flat=True)
     # we are discarding some initial steps roughly 5 times the autocorr_time steps
     # then we thin by about half the autocorrelation time steps for plotting => one does not have to do this step
 
@@ -132,7 +132,6 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
 
 
 
-
 """
 ##Availabel column densities,'H','H+','He','He+','He+2','C','C+','C+2','C+3','C+4','C+5','N','N+','N+2',
 'N+3','N+4','O','O+','O+2','O+3','O+4','O+5','O+6','O+7','S','S+','S+2','S+3','S+4','S+5','Si','Si+',
@@ -152,12 +151,12 @@ sigma_col=np.array([0.38,0.16,0.17,0.19,0.37,0.31,2.42,0.15,0.05,0.28])
 #sigma_col = np.array([0.14,0.02,0.02])
 true_Q =18
 
-outpath = '/home/abhisek/Dropbox/Dropbox/uvb_const/Cloudy_run_simulated/output'
-model_path  = '/home/abhisek/Dropbox/Dropbox/uvb_const/Cloudy_run_simulated/HI_15.08'
+outpath = '/home/vikram/Dropbox/uvb_const/Cloudy_run_simulated/output_vik'
+model_path  = '/home/vikram/Dropbox/uvb_const/Cloudy_run_simulated/HI_15.08'
 outfile = outpath + '/metal_NH18_2D.fits'
 
 uvb_array = ['KS18','HM12']
-Q_array= [18]
+Q_array= [18, 18]
 
 out_tab =  tab.Table()
 for uvb, q in zip(uvb_array, Q_array):
