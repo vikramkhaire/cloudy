@@ -8,8 +8,8 @@ import corner
 
 
 #----model interpolation
-def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18', logZ_try = -1):
-    logZ = np.around(np.arange(-0.5, 0.55, 0.05), decimals = 2) # hardcoded
+def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18', logZ_try = 0):
+    logZ = np.around(np.arange(-0.5, 0.5, 0.05), decimals = 2) # hardcoded
     #get nH array
     model_try = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ_try+4)*100)
     model = tab.Table.read(model_try)
@@ -140,19 +140,23 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
 """
 
 
-ions_to_use = ['H','C+','C+2','N+','N+2','N+4','O','O+5','Si+','Si+2','Si+3']
-data_col=np.array([15.08,14.81,15.71,14.17,15.12,13.62,11.55,14.92,11.88,13.54,13.23])
-sigma_col=np.array([0.04,0.38,0.16,0.17,0.19,0.37,0.31,2.42,0.15,0.05,0.28])
+ions_to_use = ['C+','C+2','N+','N+2','N+4','O','O+5','Si+','Si+2','Si+3']
+data_col=np.array([14.81,15.71,14.17,15.12,13.62,11.55,14.92,11.88,13.54,13.23])
+sigma_col=np.array([0.38,0.16,0.17,0.19,0.37,0.31,2.42,0.15,0.05,0.28])
+
+#ions_to_use = ['C+','C+2','N+']
+#data_col=np.array([14.81,15.71,14.17])
+#sigma_col=np.array([0.38,0.16,0.17])
 #ions_to_use= ['Si+', 'N+2', 'C+']
 #data_col = np.array([14.47,14.5,14.79])
 #sigma_col = np.array([0.14,0.02,0.02])
 true_Q =18
 
-outpath = '/home/jarvis-astro/cloudy_run/figures'
-model_path  = '/home/jarvis-astro/cloudy_run/metal_NH18'
+outpath = '/home/abhisek/Dropbox/Dropbox/uvb_const/Cloudy_run_simulated/output'
+model_path  = '/home/abhisek/Dropbox/Dropbox/uvb_const/Cloudy_run_simulated/HI_15.08'
 outfile = outpath + '/metal_NH18_2D.fits'
 
-uvb_array = ['KS18']
+uvb_array = ['KS18','HM12']
 Q_array= [18]
 
 out_tab =  tab.Table()
