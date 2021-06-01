@@ -194,6 +194,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None,
     tau = sampler.get_autocorr_time()  # number of steps needed to forget the starting position
     #print(tau)
     thin = int(np.mean(tau) / 2)  # use this number for flattning the sample as done below
+    print(np.mean(tau))
     #thin = 100
     flat_samples = sampler.get_chain(discard=thin * 20, thin= 5, flat=True)
     # we are discarding some initial steps roughly 5 times the autocorr_time steps
@@ -229,8 +230,8 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, ions_to_use_for_lower_limit = None,
 ions_to_use= ['Si+', 'N+2', 'C+']
 data_col = np.array([14.47, 14.5, 14.79])
 sigma_col = np.array([0.14, 0.02, 0.02])
-ions_to_use_for_upper_limit = ['N+4', 'S+', 'S+2', 'S+3', 'S+5', 'Fe+']
-data_col_upper_limit = np.array([13.4, 14.4, 14.0, 13.7, 12.8, 11.4])
+ions_to_use_for_upper_limit = ['N+4', 'S+']
+data_col_upper_limit = np.array([13.4, 14.4])
 ions_to_use_for_lower_limit = ['C+2', 'Si+2']
 data_col_lower_limit = np.array([14.5, 14.0])
 
@@ -249,9 +250,10 @@ for uvb, q in zip(uvb_array, Q_array):
     figname = outpath + '/' + name + '.pdf'
 
     flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
-                                  ions_to_use_for_lower_limit=ions_to_use_for_lower_limit, data_col=data_col,
-                                  ions_to_use_for_upper_limit=ions_to_use_for_upper_limit, data_col_upper_limit=data_col_upper_limit,
-                                  data_col_lower_limit=data_col_lower_limit, true_Q=true_Q, figname=figname, uvb = uvb)
+                                  ions_to_use_for_lower_limit=ions_to_use_for_lower_limit,
+                                  ions_to_use_for_upper_limit=ions_to_use_for_upper_limit, data_col=data_col,
+                                  data_col_lower_limit=data_col_lower_limit, data_col_upper_limit=data_col_upper_limit, 
+                                  true_Q=true_Q, uvb = uvb, figname=figname)
     # to efficiently save numpy array
     save_file_name = outpath + '/' + name
     np.save(save_file_name, flat_samples)
