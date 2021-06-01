@@ -63,7 +63,7 @@ def run_parallel(logZ, uvb_Q, uvb):
     # for shubham
     cloudy_path = '/home/jarvis-astro/cloudy17.02'
     fname = (logZ + 4) * 100
-    input_File = '/home/jarvis-astro/cloudy_run/metal_NH18/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
+    input_File = '/home/jarvis-astro/cloudy_run/metal_NH18_85/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ)
 
     # write input file and run cloudy
@@ -103,7 +103,7 @@ for background in uvb:
             logZ.append(metal)
 
 #-----write uvb fg and hm in cloudy format first
-path = '/home/jarvis-astro/cloudy_run/metal_NH18/'
+path = '/home/jarvis-astro/cloudy_run/metal_NH18_85/'
 kwagrs = {'uvb' : 'P19', 'z' : 0.2}
 uvb_files(path, **kwagrs)
 
