@@ -26,6 +26,8 @@ cloudy/old/shubham_mcmc_nH_Z_2D.py
 cloudy/old/shubham_mcmc_nH_Z_2D_Llimits.py
 cloudy/old/shubham_mcmc_nH_Z_2D_Ulimits.py
 cloudy/old/shubham_mcmc_nH_Z_2D_limits.py
+cloudy/old/shubham_mcmc_sample_check.py
+cloudy/old/test18_85_sample.png
 cloudy/old/test_git.py
 cloudy/old/vikram_cloudy_run.py
 cloudy/old/vikram_cloudy_run_hybrid.py
@@ -37,3 +39,4 @@ cloudy/old/vikram_cloudy_run_test_p19.py
 cloudy/old/vikram_scaled_cloudy_run_metal_grid.py
 cloudy/old/write_uvb_in_cloudy_format.py
 dist/cloudy-0.1-py3.6.egg
+dist/cloudy-0.1-py3.8.egg

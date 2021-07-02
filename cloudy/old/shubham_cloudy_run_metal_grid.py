@@ -15,13 +15,13 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 #-----------------
-from cloudy.shubham_cloudy_run import write_input
-from cloudy.shubham_cloudy_run import run
-from cloudy.shubham_cloudy_run import store_table
-from cloudy.shubham_cloudy_run import cloudy_params_defaults
+from shubham_cloudy_run import write_input
+from shubham_cloudy_run import run
+from shubham_cloudy_run import store_table
+from shubham_cloudy_run import cloudy_params_defaults
 import multiprocessing as mp
 import numpy as np
-from cloudy.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
+from write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
 import astropy.table as tab
 
 def uvb_files(file_name, **kwargs):
@@ -104,11 +104,11 @@ for background in uvb:
 
 #-----write uvb fg and hm in cloudy format first
 path = '/home/jarvis-astro/cloudy_run/metal_NH18_65/'
-kwagrs = {'uvb' : 'P19', 'z' : 0.2}
-uvb_files(path, **kwagrs)
+#kwagrs = {'uvb' : 'P19', 'z' : 0.2}
+#uvb_files(path, **kwagrs)
 
-kwagrs = {'uvb' : 'FG20', 'z' : 0.2}
-uvb_files(path, **kwagrs)
+#kwagrs = {'uvb' : 'FG20', 'z' : 0.2}
+#uvb_files(path, **kwagrs)
 
 
 pool = mp.Pool(processes=4)

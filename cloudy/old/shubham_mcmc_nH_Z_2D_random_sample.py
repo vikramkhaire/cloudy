@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar  1 18:07:59 2021
+Created on Thu Jul  1 19:46:44 2021
 
 @author: jarvis-astro
 """
 
-
 import numpy as np
+import random
 import astropy.table as tab
 from scipy.interpolate import interp1d
 from scipy.interpolate import interp2d
@@ -154,7 +154,7 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     # we are discarding some initial steps roughly 5 times the autocorr_time steps
     # then we thin by about half the autocorrelation time steps for plotting => one does not have to do this step
 
-    labels = ['log nH (in cm$\mathregular{^{-3}}$)', 'log Z (in $Z_{\odot}$)']
+    labels = ['log nH (cm$\mathregular{^{-3}}$)', 'log Z ($Z_{\odot}$)']
     #uvb_q= int((model_Q.split('try_Q')[-1]).split('.fits')[0])
 
     if Q_uvb == true_Q:
@@ -181,51 +181,133 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
 
 
 
-#ions_to_use= ['Si+', 'C+', 'Si+2', 'C+2']
+# generating random 20 observations for all 4 ions
+random_col_SiII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(16,18), 2)
+    random_col_SiII.append(n)
+#print(random_col_SiII)
+
+random_col_CII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(16,18), 2)
+    random_col_CII.append(n)
+#print(random_col_CII)
+
+random_col_SiIII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(16,18), 2)
+    random_col_SiIII.append(n)
+#print(random_col_SiIII)
+
+random_col_CIII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(16,18), 2)
+    random_col_CIII.append(n)
+#print(random_col_CIII)
+
+random_sigma_SiII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(0.2,0.5), 2)
+    random_sigma_SiII.append(n)
+#print(random_sigma_SiII)
+
+random_sigma_CII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(0.2,0.5), 2)
+    random_sigma_CII.append(n)
+#print(random_sigma_CII)
+
+random_sigma_SiIII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(0.2,0.5), 2)
+    random_sigma_SiIII.append(n)
+#print(random_sigma_SiIII)
+
+random_sigma_CIII = []
+for i in range(0,20):
+    #n = random.randint(16,18)
+    n = round(random.uniform(0.2,0.5), 2)
+    random_sigma_CIII.append(n)
+#print(random_sigma_CIII)
+
+
+col = np.array([random_col_SiII, random_col_CII, random_col_SiIII, random_col_CIII])
+#print(col)
+#print(col[:,0])
+col_1 = []
+for i in range(len(random_col_SiII)):
+#    col = []
+    col_2 = col[:,i]
+    col_1.append(col_2)
+#    print(col)
+data_col = np.array(col_1)
+print('data_col: ', data_col)
+
+sigma = np.array([random_sigma_SiII, random_sigma_CII, random_sigma_SiIII, random_sigma_CIII])
+#print(sigma)
+#print(sigma[:,0])
+sigma_1 = []
+for i in range(len(random_sigma_SiII)):
+#    sigma = []
+    sigma_2 = sigma[:,i]
+    sigma_1.append(sigma_2)
+#    print(col)
+sigma_col = np.array(sigma_1)
+print('sigma_col: ', sigma_col)
+
+
+ions_to_use= ['Si+', 'C+', 'Si+2', 'C+2']
 #data_col = np.array([16.37, 17.82, 16.96, 17.16])
 #sigma_col = np.array([0.57, 0.46, 1, 1])
-ions_to_use= ['Si+', 'C+']
-data_col = np.array([16.37, 17.82])
-sigma_col = np.array([0.57, 0.46])
 true_Q =18
 
 outpath = '/home/jarvis-astro/cloudy_run/figures'
 model_path  = '/home/jarvis-astro/cloudy_run/metal_NH18_85'
-outfile = outpath + '/metal_NH18_85_2D.fits'
+#outfile = outpath + '/metal_NH18_85_2D' + '.fits'
 
 uvb_array = ['KS18']
 Q_array= [18]
 
-out_tab =  tab.Table()
-for uvb, q in zip(uvb_array, Q_array):
-    name =uvb + '_Q{}'.format(q)
-    figname = outpath + '/' + name + '.pdf'
+#out_tab =  tab.Table()
+for j in range(0, len(random_sigma_SiII)):
+    for uvb, q in zip(uvb_array, Q_array):
+        name = uvb + '_Q{}'.format(q)
+        #    for j in range(0, len(random_sigma_SiII) - 1):
+        figname = outpath + '/' + name + '_' + str(j) +  '.pdf'
 
-    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
-                                  data_col=data_col, sigma_col=sigma_col, true_Q=true_Q,
-                                  figname=figname, uvb = uvb)
-    # to efficiently save numpy array
-    save_file_name = outpath + '/' + name
-    np.save(save_file_name, flat_samples)
+        flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
+                                      data_col=data_col[j], sigma_col=sigma_col[j], true_Q=true_Q,
+                                      figname=figname, uvb = uvb)
+        # to efficiently save numpy array
+        save_file_name = outpath + '/' + name + '_' + str(j)
+        np.save(save_file_name, flat_samples)
 
-    out =[[q]]
-    for i in range(ndim):
-        mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
-        q = np.diff(mcmc)
-        out.append([mcmc[1]])
-        out.append([q[0]])
-        out.append([q[1]])
+        out =[[q]]
+        for i in range(ndim):
+            mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
+            q = np.diff(mcmc)
+            out.append([mcmc[1]])
+            out.append([q[0]])
+            out.append([q[1]])
+        out_tab =  tab.Table()
+        print(out)
+        t = tab.Table(out, names = ('Q', 'nH', 'n16', 'n84', 'Z', 'Z16', 'Z84'))
+        out_tab = tab.vstack((out_tab, t))
 
-    print(out)
-    t = tab.Table(out, names = ('Q', 'nH', 'n16', 'n84', 'Z', 'Z16', 'Z84'))
-    out_tab = tab.vstack((out_tab, t))
 
+    outfile = outpath + '/metal_NH18_85_2D' + '_' + str(j) + '.fits'
+    uvb_column = ['Q18']
+    out_tab.add_column(uvb_column, name = 'uvb')
 
-
-uvb_column = ['Q18']
-out_tab.add_column(uvb_column, name = 'uvb')
-
-out_tab.write(outfile, overwrite = True)
+    out_tab.write(outfile, overwrite = True)
 
 
 """

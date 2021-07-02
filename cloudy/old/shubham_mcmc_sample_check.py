@@ -54,7 +54,7 @@ def get_interp_func(model_path, ions_to_use, Q_uvb = 18, uvb = 'KS18'):
             sorted_model[sorted_model == 0 ] = 1e-15 # for avoiding log10 (0) error
             z [:, i] = np.log10(sorted_model) #--- for log - log interpolation
 #        logf = interp2d(lognH, logZ, np.log10(model_touple), fill_value='extrapolate')
-        logf = interp2d(lognH, logZ, z.T, fill_value='extrapolate')
+        logf = interp2d(lognH, logZ, z.T)
 
         interpolation_function_list.append(logf)
 #    return logf
@@ -76,22 +76,33 @@ def sample_plot(npy_file, interp_logf, true_ions, true_col, true_sigma, figname 
 
     flat_samples = np.load(npy_file)
     inds = np.random.randint(len(flat_samples), size=samples)
+    
+
+#    model_col  = np.array(col)
+    
     for ind in inds:
         sample = flat_samples[ind]
         lognH, logZ = sample
-        col = 10 ** interp_logf(lognH,logZ)[0]
+#        print(lognH)
+#        print(logZ)
+        col = []
+        for i in range(len(true_col)):
+#            print(i)
+            col_mod = 10 ** interp_logf[i](lognH,logZ)[0]
+            col.append(col_mod)
+        col_m = np.array(col)
         # scale the column densities by the metallicity Z
-        metal_scaling_linear = 10 ** logZ / 10 ** reference_log_metal
-        model_col = col * metal_scaling_linear
-        ax.plot(true_ions, model_col,  "C1", alpha=0.2)
+#        metal_scaling_linear = 10 ** logZ / 10 ** reference_log_metal
+#        model_col = col_m * metal_scaling_linear
+        ax.plot(true_ions, np.log10(col_m),  "C1", alpha=0.2)
 
-    ax.errorbar(true_ions, true_col, yerr = (true_col*true_sigma)*2.303, color = 'k', elinewidth =2, marker = '.',  markersize = 15,
+    ax.errorbar(true_ions, true_col, yerr = true_sigma, color = 'k', elinewidth =2, marker = '.',  markersize = 15,
                 linestyle = '', zorder =1000)
 
     ax.set_xlabel('Ion')
     ax.set_ylabel(r'N$_{\rm ion}$ (cm$^{-2}$)')
     # ax.set_xscale('log')
-    ax.set_yscale('log')
+#    ax.set_yscale('log')
 
     # deco
     ax.tick_params(direction='in', length=5, width=1.5)
@@ -108,7 +119,7 @@ def sample_plot(npy_file, interp_logf, true_ions, true_col, true_sigma, figname 
 
 
 
-def get_mcmc_sample(model_path, ions_to_use, npyfile,  true_Q =18, figname = 'test.png', same_error = False):
+def get_mcmc_sample(model_path, ions_to_use, data_col, sigma_col, npyfile,  true_Q =18, figname = 'test.png', same_error = False):
     # run_mcmc(model_Q= model, ions_to_use= ions)
     # ------------------ here is a way to run code
     number_of_ions = len(ions_to_use)
@@ -154,12 +165,14 @@ logZ = np.around(np.arange(-2, 1, 0.2), decimals = 2)
 ions_to_use = ['Si+', 'C+', 'Si+2', 'C+2']
 data_col = np.array([16.37, 17.82, 16.96, 17.16])
 sigma_col = np.array([0.57, 0.46, 1, 1])
-ions_to_use = ions_to_use[np.argsort(data_col)]
+ions_to_use = np.array(ions_to_use)[np.argsort(data_col)]
 print(ions_to_use, ': sorted ions_to_use')
+data_col = data_col[np.argsort(data_col)]
+print(data_col, ': sorted data_col')
 sigma_col = sigma_col[np.argsort(data_col)]
 print(sigma_col, ': sorted sigma_col')
 true_Q =18
 
 npyfile = '/home/jarvis-astro/cloudy_run/figures/without_limits/KS18_Q{}.npy'.format(Q_uvb)
 
-get_mcmc_sample(model_path, ions_to_use, npyfile, figname= 'test18_85_sample.png')
+get_mcmc_sample(model_path, ions_to_use, data_col, sigma_col, npyfile, figname= 'test18_85_sample.png')
