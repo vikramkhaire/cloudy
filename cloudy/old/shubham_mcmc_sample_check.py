@@ -163,16 +163,19 @@ logZ = np.around(np.arange(-2, 1, 0.2), decimals = 2)
 #    model_Q = model_path + '/try_KS18_Q{}_Z{:.0f}.fits'.format(Q_uvb, (logZ[i]+4)*100)
 #    model.append(model_Q)
 ions_to_use = ['Si+', 'C+', 'Si+2', 'C+2']
-data_col = np.array([16.37, 17.82, 16.96, 17.16])
-sigma_col = np.array([0.57, 0.46, 1, 1])
-ions_to_use = np.array(ions_to_use)[np.argsort(data_col)]
-print(ions_to_use, ': sorted ions_to_use')
-data_col = data_col[np.argsort(data_col)]
-print(data_col, ': sorted data_col')
-sigma_col = sigma_col[np.argsort(data_col)]
-print(sigma_col, ': sorted sigma_col')
+data_col = np.array([[17.47, 17.67, 16.78, 16.51], [17.44, 16.49, 17.47, 16.61], [17.87, 16.87, 16.43, 17.85], [17.08, 16.09, 17.07, 17.91], [16.38, 16.25, 16.92, 16.38], [17.62, 17.21, 16.7,  16.54], [16.11, 16.95, 17.91, 16.48], [16.27, 16.8,  17.27, 17.15], [17.47, 16.86, 17.79, 17.16], [16.44, 16.58, 16.29, 17.8 ], [16.98, 17.32, 16.81, 17.57], [16.95, 17.07, 17.46, 17.83], [17.56, 17.97, 17.08, 17.74], [17.28, 17.27, 16.52, 17.94], [17.18, 17.93, 16.14, 16.81], [17.67, 16.97, 17.95, 17.82], [17.15, 16.44, 16.58, 16.08], [16.25, 16.3,  16.43, 17.22], [16.58,17.,   17.16, 16.95], [17.56, 16.5,  17.8,  17.78]])
+sigma_col = np.array([[0.43, 0.3,  0.34, 0.21], [0.22, 0.36, 0.23, 0.21], [0.31, 0.45, 0.48, 0.29], [0.46, 0.2,  0.21, 0.22], [0.27, 0.45, 0.31, 0.48], [0.42, 0.33, 0.5,  0.42], [0.27, 0.46, 0.3,  0.29], [0.44, 0.43, 0.47, 0.3 ], [0.36, 0.4,  0.26, 0.4 ], [0.41, 0.37, 0.23, 0.4 ], [0.42, 0.45, 0.22, 0.4 ], [0.38, 0.48, 0.22, 0.28], [0.37, 0.26, 0.46, 0.33], [0.32, 0.34, 0.31, 0.39], [0.22, 0.25, 0.42, 0.24], [0.5,  0.21, 0.39, 0.43], [0.46, 0.24, 0.49, 0.42], [0.34, 0.36, 0.33, 0.33], [0.25, 0.34, 0.27, 0.22], [0.32, 0.43, 0.34, 0.23]])
+#ions_to_use = np.array(ions_to_use)[np.argsort(data_col)]
+#print(ions_to_use, ': sorted ions_to_use')
+#data_col = data_col[np.argsort(data_col)]
+#print(data_col, ': sorted data_col')
+#sigma_col = sigma_col[np.argsort(data_col)]
+#print(sigma_col, ': sorted sigma_col')
 true_Q =18
 
 npyfile = '/home/jarvis-astro/cloudy_run/figures/without_limits/KS18_Q{}.npy'.format(Q_uvb)
 
+#get_mcmc_sample(model_path, ions_to_use, data_col, sigma_col, npyfile, figname= 'test18_85_sample.png')
+
+for j in range(0, len(random_sigma_SiII)):
 get_mcmc_sample(model_path, ions_to_use, data_col, sigma_col, npyfile, figname= 'test18_85_sample.png')
