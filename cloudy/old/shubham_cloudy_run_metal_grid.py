@@ -63,11 +63,11 @@ def run_parallel(logZ, uvb_Q, uvb):
     # for shubham
     cloudy_path = '/home/jarvis-astro/cloudy17.02'
     fname = (logZ + 4) * 100
-    input_File = '/home/jarvis-astro/cloudy_run/metal_NH18_65/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
+    input_File = '/home/jarvis-astro/cloudy_run/metal_NH18_85/try_{}_Q{}_Z{:.0f}.in'.format(uvb, uvb_Q, fname)
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ)
 
     # write input file and run cloudy
-    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-5, -3, 0.2], stop_NHI = 18.65, T = None, metal = logZ,
+    ions, params = cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-5, -2, 0.02], stop_NHI = 18.85, T = None, metal = logZ,
                                           sequential = True, z=0.39047)
     write_input(input_File, *ions, **params)
     run(cloudy_path=cloudy_path, input_file=input_File)
@@ -81,7 +81,7 @@ def run_parallel(logZ, uvb_Q, uvb):
 
 # runnning in parallel
 #uvb_array= [14, 15, 16, 17, 18, 19, 20]
-logZ_array = np.around(np.arange(-2, 1, 0.2), decimals = 2)
+logZ_array = np.around(np.arange(-2, 0.5, 0.05), decimals = 2)
 uvb = ['KS18']
 uvb_Q = [18]
 
@@ -103,7 +103,7 @@ for background in uvb:
             logZ.append(metal)
 
 #-----write uvb fg and hm in cloudy format first
-path = '/home/jarvis-astro/cloudy_run/metal_NH18_65/'
+path = '/home/jarvis-astro/cloudy_run/metal_NH18_85/'
 #kwagrs = {'uvb' : 'P19', 'z' : 0.2}
 #uvb_files(path, **kwagrs)
 
