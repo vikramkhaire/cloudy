@@ -174,7 +174,9 @@ def write_input(file_name, *args, **kwargs):
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', out_file_ext = '.spC',
+                           sequential = False):
+
     """
     :param uvb_Q:
     :param uvb_scale:
@@ -199,7 +201,8 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'stop_logNHI': stop_NHI,
                      'scale_He': 0.081632653,
                      'abundances' : abundances,
-                     'sequential': sequential}
+                     'sequential': sequential,
+                     'out_file_ext': out_file_ext}
     print(cloudy_params)
 
     if hden_vary :
@@ -253,16 +256,17 @@ def store_table(ions, output_file, fits_filename = None):
 Example run : 
 #----give this
 uvb_Q=20
+out_file_ext = '.spC'
 cloudy_path = '/home/vikram/c17.02'
 input_File = '/home/vikram/cloudy_run/try.in'
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1])
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1], out_file_ext = out_file_ext )
 write_input(input_File, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_File)
 
 # write output tables
-output_filename =  input_File.split('.in')[0] + '.spC'
+output_filename =  input_File.split('.in')[0] + out_file_ext
 fits_filename = input_File.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
 store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
 
