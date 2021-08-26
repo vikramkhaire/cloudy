@@ -9,11 +9,12 @@ import corner
 
 #----model interpolation
 def get_interp_func(model_path, ions_to_use, Q_uvb, uvb = 'KS18', logZ_try = -1):
-    logZ = np.around(np.arange(-2, 1, 0.2), decimals = 2) # hardcoded
+    logZ = np.around(np.arange(-3, 1, 0.05), decimals = 2) # hardcoded
     #get nH array
     model_try = model_path + '/try_{}_Q{}_Z{:.0f}.fits'.format(uvb, Q_uvb, (logZ_try+4)*100)
     model = tab.Table.read(model_try)
     lognH = np.log10(np.array(model['hden']))
+    print(len(lognH) )
 
     interpolation_function_list = []
     for ion in ions_to_use:
@@ -85,11 +86,11 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     # be nwalkers * nsteps
 
     ndim = 2  # number of parameters in the model
-    nwalkers = 50  # number of MCMC walkers
-    nsteps = 5000  # number of MCMC steps to take
+    nwalkers = 100  # number of MCMC walkers
+    nsteps = 10000  # number of MCMC steps to take
 
     # set theta near the maximum likelihood, with
-    n_guess = np.random.uniform(-5, -3, nwalkers)
+    n_guess = np.random.uniform(-4, -2, nwalkers)
     z_guess = np.random.uniform(-2, 0, nwalkers)
     np.random.seed(1)
     starting_guesses = np.vstack((n_guess, z_guess)).T  # initialise at a tiny sphere
@@ -131,50 +132,4 @@ def run_mcmc(model_path, Q_uvb, ions_to_use, data_col=None, sigma_col=None, true
     return flat_samples, ndim
 
 
-
-
-
-
-ions_to_use= ['Si+', 'N+2', 'C+']
-data_col = np.array([14.47,14.5,14.79])
-sigma_col = np.array([0.14,0.02,0.02])
-true_Q =18
-
-outpath = '/home/jarvis-astro/cloudy_run/figures'
-model_path  = '/home/jarvis-astro/cloudy_run/metal_NH18'
-outfile = outpath + '/metal_NH18_2D.fits'
-
-uvb_array = ['KS18']
-Q_array= [18]
-
-out_tab =  tab.Table()
-for uvb, q in zip(uvb_array, Q_array):
-    name =uvb + '_Q{}'.format(q)
-    figname = outpath + '/' + name + '.pdf'
-
-    flat_samples, ndim = run_mcmc(model_path= model_path, Q_uvb=q, ions_to_use=ions_to_use,
-                                  data_col=data_col, sigma_col=sigma_col, true_Q=true_Q,
-                                  figname=figname, uvb = uvb)
-    # to efficiently save numpy array
-    save_file_name = outpath + '/' + name
-    np.save(save_file_name, flat_samples)
-
-    out =[[q]]
-    for i in range(ndim):
-        mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
-        q = np.diff(mcmc)
-        out.append([mcmc[1]])
-        out.append([q[0]])
-        out.append([q[1]])
-
-    print(out)
-    t = tab.Table(out, names = ('Q', 'nH', 'n16', 'n84', 'Z', 'Z16', 'Z84'))
-    out_tab = tab.vstack((out_tab, t))
-
-
-
-uvb_column = ['Q18']
-out_tab.add_column(uvb_column, name = 'uvb')
-
-out_tab.write(outfile, overwrite = True)
 
