@@ -161,12 +161,12 @@ def write_input(file_name, *args, **kwargs):
     if kwargs['constant_T'] is not None:
         temp_statement =  'constant temperature, t={} K [linear] \n'.format(kwargs['constant_T'])
         f.write(temp_statement)
-        if kwargs['constant_T'] <= 4000:
-            stop_temp_statement = 'stop temperature 30' # avoiding default Temperature in cloudy
-            f.write(stop_temp_statement)
+    if kwargs['constant_T'] <= 4000:
+        stop_temp_statement = 'stop temperature 30 \n' # avoiding default Temperature in cloudy
+        f.write(stop_temp_statement)
 
     # new lines
-    increase_nzones = 'set nend 6000' # for optically thick systems; by default total zones are just 1400
+    increase_nzones = 'set nend 6000 \n' # for optically thick systems; by default total zones are just 1400
     f.write(increase_nzones)
 
     save_hydrogen = 'save hydrogen conditions \".hydro\" last no clobber \n'
