@@ -261,11 +261,6 @@ def store_table(ions, output_file, log_hden = None, fits_filename = None):
 
     if log_hden == None:
         hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
-    else:
-        try:
-            hden_array = np.arange(log_hden[0], log_hden[1]+ 0.5*log_hden[2], log_hden[2])
-        except:
-            hden_array = log_hden[0]
 
     
     # read the cloudy output files
