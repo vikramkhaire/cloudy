@@ -166,7 +166,7 @@ def write_input(file_name, *args, **kwargs):
             f.write(stop_temp_statement)
 
     # new lines
-    increase_nzones = 'set nend 5000' # for optically thick systems; by default total zones are just 1400
+    increase_nzones = 'set nend 6000' # for optically thick systems; by default total zones are just 1400
     f.write(increase_nzones)
 
     save_hydrogen = 'save hydrogen conditions \".hydro\" last no clobber \n'
@@ -221,7 +221,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'log_metal': metal,
                      'constant_T': T,
                      'stop_logNHI': stop_NHI,
-                     'scale_He': 0.081632653,
+                     'scale_He': 0.08156498,
                      'optical_depth_state' : optical_depth_state,
                      'sphere' : sphere,
                      'CMB' : CMB,
