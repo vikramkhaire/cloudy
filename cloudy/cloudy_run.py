@@ -161,8 +161,14 @@ def write_input(file_name, *args, **kwargs):
     if kwargs['constant_T'] is not None:
         temp_statement =  'constant temperature, t={} K [linear] \n'.format(kwargs['constant_T'])
         f.write(temp_statement)
+        if kwargs['constant_T'] <= 4000:
+            stop_temp_statement = 'stop temperature 30' # avoiding default Temperature in cloudy
+            f.write(stop_temp_statement)
 
-    # new line
+    # new lines
+    increase_nzones = 'set nend 5000' # for optically thick systems; by default total zones are just 1400
+    f.write(increase_nzones)
+
     save_hydrogen = 'save hydrogen conditions \".hydro\" last no clobber \n'
     f.write(save_hydrogen)
 
@@ -187,13 +193,14 @@ def write_input(file_name, *args, **kwargs):
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,optical_depth = None, sphere = None, CMB = None):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,
+                           optical_depth_state = None, sphere = None, CMB = None):
     """
     :param uvb_Q:
     :param uvb_scale:
-    :param log_hden: [initial_value, final_value, increment]; works in grid if hden_vary = True; else uses just one value
+    :param log_hden:
+    :param hden_vary: [initial_value, final_value, increment]; works in grid if hden_vary = True; else uses just one value
         == initial_value
-    :param hden_vary:
     :param uvb:
     :param z:
     :param T: if not None it is taken as constant temperature, else cloudy will calculate from photoionization-thermal
@@ -202,8 +209,12 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
     :param stop_NHI:
     :param abundances:
     :param sequential: (False) by default allows cloudy to use all the cores in the system else while using multiprocessing make it True
+    :param optical_depth_state:
+    :param sphere: 
+    :param CMB:
     :return:
     """
+
 
     cloudy_params = {'uvb': uvb, 'z' : z, 'uvb_scale': uvb_scale, 'uvb_Q' : uvb_Q,
                      'hden_vary' : hden_vary,
@@ -211,7 +222,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'constant_T': T,
                      'stop_logNHI': stop_NHI,
                      'scale_He': 0.081632653,
-                     'optical_depth_state' : optical_depth,
+                     'optical_depth_state' : optical_depth_state,
                      'sphere' : sphere,
                      'CMB' : CMB,
                      'abundances' : abundances,
@@ -243,16 +254,19 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
     return ions, cloudy_params
 
 
-def store_table(ions, output_file, fits_filename = None):
+def store_table(ions, output_file, log_hden = None, fits_filename = None):
     # get hydrogen density array
     hydro_file = output_file.split('.')[0] + '.hydro'
     hydro =  tab.Table.read(hydro_file, format = 'ascii')
-    #for some unsuccseful cloudy run the header on .hydro file does not exist.
-    #This is to counter that error.
-    if 'HDEN' in hydro.columns:
-        hden_array = np.unique(hydro['HDEN'])
+
+    if log_hden == None:
+        hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
     else:
-        hden_array = np.unique(hydro['col3'])
+        try:
+            hden_array = np.arange(log_hden[0], log_hden[1]+ 0.5*log_hden[2], log_hden[2])
+        except:
+            hden_array = log_hden[0]
+
     
     # read the cloudy output files
     cloudy_output = tab.Table.read(output_file, format = 'ascii')
@@ -304,7 +318,7 @@ from cloudy_run_abhisek import *
 uvb_Q=18
 cloudy_path = '/home/abhisek/Soft/c17.02'
 input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],optical_depth='double')
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],optical_depth_twice='double')
 write_input(input_file, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_file)
 output_filename =  input_file.split('.in')[0] + '.spC'
