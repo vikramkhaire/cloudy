@@ -210,7 +210,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
     :param abundances:
     :param sequential: (False) by default allows cloudy to use all the cores in the system else while using multiprocessing make it True
     :param optical_depth_state:
-    :param sphere: 
+    :param sphere:
     :param CMB:
     :return:
     """
