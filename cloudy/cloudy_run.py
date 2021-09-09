@@ -287,7 +287,7 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
     #cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
     if fits_filename == None:
-        fits_filename = output_file.split('.')[0] + 'fits'
+        fits_filename = output_file.split('.')[0] + '.fits'
 
     cloudy_output.write (fits_filename, overwrite = True)
 
