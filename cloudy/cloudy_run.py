@@ -161,12 +161,12 @@ def write_input(file_name, *args, **kwargs):
     if kwargs['constant_T'] is not None:
         temp_statement =  'constant temperature, t={} K [linear] \n'.format(kwargs['constant_T'])
         f.write(temp_statement)
-        if kwargs['constant_T'] <= 4000:
-            stop_temp_statement = 'stop temperature 30' # avoiding default Temperature in cloudy
-            f.write(stop_temp_statement)
+    if kwargs['constant_T'] <= 4000:
+        stop_temp_statement = 'stop temperature 30 \n' # avoiding default Temperature in cloudy
+        f.write(stop_temp_statement)
 
     # new lines
-    increase_nzones = 'set nend 5000' # for optically thick systems; by default total zones are just 1400
+    increase_nzones = 'set nend 6000 \n' # for optically thick systems; by default total zones are just 1400
     f.write(increase_nzones)
 
     save_hydrogen = 'save hydrogen conditions \".hydro\" last no clobber \n'
@@ -221,7 +221,7 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'log_metal': metal,
                      'constant_T': T,
                      'stop_logNHI': stop_NHI,
-                     'scale_He': 0.081632653,
+                     'scale_He': 0.08156498,
                      'optical_depth_state' : optical_depth_state,
                      'sphere' : sphere,
                      'CMB' : CMB,
@@ -261,11 +261,6 @@ def store_table(ions, output_file, log_hden = None, fits_filename = None):
 
     if log_hden == None:
         hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
-    else:
-        try:
-            hden_array = np.arange(log_hden[0], log_hden[1]+ 0.5*log_hden[2], log_hden[2])
-        except:
-            hden_array = log_hden[0]
 
     
     # read the cloudy output files
