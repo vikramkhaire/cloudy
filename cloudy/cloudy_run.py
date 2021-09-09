@@ -194,6 +194,7 @@ def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
 
     # storing tables in fits files
     if kwargs['store_table']:
+
         output_filename = cloudy_run_path_and_file[1].split('.in')[0] + '.spC'
         store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_logNHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
 
@@ -313,8 +314,6 @@ cloudy_run_path_and_file =[cloudy_path, input_file]
 ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
 write_input_and_run(cloudy_run_path_and_file, *ions, **params)
 #run(cloudy_path= cloudy_path, input_file= input_file)
-
-
 
 from cloudy_run_abhisek import *
 uvb_Q=18
