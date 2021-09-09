@@ -188,13 +188,18 @@ def write_input(file_name, *args, **kwargs):
 
     f.close()
 
+    # storing tables in fits files
+    if kwargs['store_table']:
+        output_filename = input_file.split('.in')[0] + '.spC'
+        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_NHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
+
     return
 
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
                            T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,
-                           optical_depth_state = None, sphere = None, CMB = None):
+                           optical_depth_state = None, sphere = None, CMB = None, store_table = True, remove_dot_out_file = False ):
     """
     :param uvb_Q:
     :param uvb_scale:
@@ -226,7 +231,9 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
                      'sphere' : sphere,
                      'CMB' : CMB,
                      'abundances' : abundances,
-                     'sequential': sequential}
+                     'sequential': sequential,
+                     'store_table': store_table,
+                     'remove_dot_out_file': remove_dot_out_file}
     print(cloudy_params)
 
     if hden_vary :
@@ -254,15 +261,16 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
     return ions, cloudy_params
 
 
-def store_table(ions, output_file, log_hden = None, fits_filename = None):
+def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot_out_file = False,  fits_filename = None):
+
+    # TODO later: add hden in cloudy.spC file then ...
+    #------------------ remove this
     # get hydrogen density array
     hydro_file = output_file.split('.')[0] + '.hydro'
     hydro =  tab.Table.read(hydro_file, format = 'ascii')
 
-    if log_hden == None:
-        hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
+    hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
 
-    
     # read the cloudy output files
     cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
@@ -270,11 +278,21 @@ def store_table(ions, output_file, log_hden = None, fits_filename = None):
         cloudy_output.rename_column (old_name, new_name)
 
     cloudy_output.add_column(hden_array, name = 'hden' )
+    #------------------ till now and uncomment below
+    #cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
     if fits_filename == None:
         fits_filename = output_filename.split('.')[0] + 'fits'
 
     cloudy_output.write (fits_filename, overwrite = True)
+
+    if remove_dot_out_file:
+        # check if the stop_column density reached; if not keep .out file for debugging
+        cloudy_out_file = output_file.split('.')[0] + '.out'
+        if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI >= tolerance:
+            os.remove(cloudy_out_file)
+        else:
+            print('stop NHI value did not reach, keeping {} file for debugging'.format(cloudy_out_file))
 
     return
 
@@ -287,14 +305,10 @@ cloudy_path = '/home/vikram/c17.02'
 input_File = '/home/vikram/cloudy_run/try.in'
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1])
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
 write_input(input_file, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_file)
 
-# write output tables
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
-store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
 
 
 from cloudy_run_abhisek import *
