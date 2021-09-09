@@ -37,7 +37,7 @@ def run(cloudy_path, input_file):
     return
 
 
-def write_input(file_name, *args, **kwargs):
+def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
 
     """
     :param file_name: the input filename where cloudy commands will be written
@@ -55,7 +55,7 @@ def write_input(file_name, *args, **kwargs):
     :return:
     """
 
-    f = open(file_name, "w+")
+    f = open(cloudy_run_path_and_file[1], "w+")
 
     if kwargs['uvb'] == 'KS18':
         uvb_statement =  'TABLE {} redshift = {} [scale = {}] [Q = {}] \n'.format(
@@ -161,9 +161,9 @@ def write_input(file_name, *args, **kwargs):
     if kwargs['constant_T'] is not None:
         temp_statement =  'constant temperature, t={} K [linear] \n'.format(kwargs['constant_T'])
         f.write(temp_statement)
-    if kwargs['constant_T'] <= 4000:
-        stop_temp_statement = 'stop temperature 30 \n' # avoiding default Temperature in cloudy
-        f.write(stop_temp_statement)
+        if kwargs['constant_T'] <= 4000:
+            stop_temp_statement = 'stop temperature 30 \n' # avoiding default Temperature in cloudy
+            f.write(stop_temp_statement)
 
     # new lines
     increase_nzones = 'set nend 6000 \n' # for optically thick systems; by default total zones are just 1400
@@ -188,10 +188,14 @@ def write_input(file_name, *args, **kwargs):
 
     f.close()
 
+    # Now run cloudy here
+
+    run(cloudy_path=cloudy_run_path_and_file[0], input_file=cloudy_run_path_and_file[1])
+
     # storing tables in fits files
     if kwargs['store_table']:
-        output_filename = input_file.split('.in')[0] + '.spC'
-        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_NHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
+        output_filename = cloudy_run_path_and_file[1].split('.in')[0] + '.spC'
+        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_logNHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
 
     return
 
@@ -282,7 +286,7 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
     #cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
     if fits_filename == None:
-        fits_filename = output_filename.split('.')[0] + 'fits'
+        fits_filename = output_file.split('.')[0] + 'fits'
 
     cloudy_output.write (fits_filename, overwrite = True)
 
@@ -302,12 +306,13 @@ Example run :
 #----give this
 uvb_Q=20
 cloudy_path = '/home/vikram/c17.02'
-input_File = '/home/vikram/cloudy_run/try.in'
+input_file = '/home/vikram/cloudy_run/try.in'
+cloudy_run_path_and_file =[cloudy_path, input_file]
 
 # write input file and run cloudy
 ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
+write_input_and_run(cloudy_run_path_and_file, *ions, **params)
+#run(cloudy_path= cloudy_path, input_file= input_file)
 
 
 
