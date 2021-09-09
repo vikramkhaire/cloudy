@@ -190,8 +190,8 @@ def write_input(file_name, *args, **kwargs):
 
     # storing tables in fits files
     if kwargs['store_table']:
-        output_filename = input_file.split('.in')[0] + '.spC'
-        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_NHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
+        output_filename = file_name.split('.in')[0] + '.spC'
+        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_logNHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
 
     return
 
@@ -305,7 +305,7 @@ cloudy_path = '/home/vikram/c17.02'
 input_File = '/home/vikram/cloudy_run/try.in'
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = true)
 write_input(input_file, *ions, **params)
 run(cloudy_path= cloudy_path, input_file= input_file)
 
