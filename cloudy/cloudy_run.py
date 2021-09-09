@@ -294,7 +294,7 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
     if remove_dot_out_file:
         # check if the stop_column density reached; if not keep .out file for debugging
         cloudy_out_file = output_file.split('.')[0] + '.out'
-        if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI >= tolerance:
+        if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI <= tolerance:
             os.remove(cloudy_out_file)
         else:
             print('stop NHI value did not reach, keeping {} file for debugging'.format(cloudy_out_file))
