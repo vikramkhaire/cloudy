@@ -8,6 +8,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 #-----------------
 from cloudy.cloudy_run import write_input_and_run
+from cloudy.cloudy_run import cloudy_params_defaults
 import multiprocessing as mp
 import numpy as np
 
@@ -73,7 +74,7 @@ z_re_array          =   np.array([0.364536, 0.193186, 0.423067, 0.225963, 0.2498
 logT_array      =   np.around(np.arange(3.5,6.31,0.02), decimals = 2)
 #logZ_array     =   np.around(np.arange(-3.0,-2.0,3.0), decimals = 2)
 #logZ_array	    =   np.array([-3.0,-1.0, -0.5,0.0]) #for AM
-logZ_array	    =   np.array([0.25,0.50,0.75,1.0]) #for VK
+logZ_array	    =   np.array([0.25, 0.50, 0.75, 1.0]) #for VK
 
 
 uvb          = ['KS18']
@@ -133,6 +134,6 @@ with open('try.txt','w') as f:
 
 """
 
-pool = mp.Pool(processes=280)
+pool = mp.Pool(processes=28*7)
 results = [pool.apply_async(run_parallel, args=(NHI, Z, Q, mod,T,z_re)) for  NHI, Z, Q, mod,T,z_re in zip(logNHI, logZ, the_Q_values, uvb_models,logT,z_red)]
 output = [p.get() for p in results]

@@ -2,8 +2,11 @@
 # Propogate environment variables to compute node
 #SBATCH --export=ALL
 
+# Select partition
+#SBATCH --partition=iist-all
+
 # set the number of nodes and processes per node
-#SBATCH --nodes=10
+#SBATCH --nodes=7
 
 # set the number of tasks (processes) per node.
 #SBATCH --ntasks-per-node=28
@@ -24,5 +27,5 @@ echo $SLURM_NPROCS
 
 export PATH="/home/vikram/anaconda3/bin:$PATH"
 
-python cloudy_grid.py
+python grid_cloudy.py
 
