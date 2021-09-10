@@ -311,7 +311,7 @@ input_file = '/home/vikram/cloudy_run/try.in'
 cloudy_run_path_and_file =[cloudy_path, input_file]
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = true)
 write_input_and_run(cloudy_run_path_and_file, *ions, **params)
 #run(cloudy_path= cloudy_path, input_file= input_file)
 

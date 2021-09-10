@@ -7,7 +7,7 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 #-----------------
-from cloudy_run import write_input
+from cloudy_run import write_input_and_run
 from cloudy_run import run
 from cloudy_run import store_table
 from cloudy_run import cloudy_params_defaults
@@ -18,25 +18,18 @@ import astropy.table as tab
 
 
 def run_parallel(logNHI,logZ, uvb_Q, uvb,logT,z_re):
-    cloudy_path     =   '/home/abhisek/soft/c17.02'
+    cloudy_path     =   '/home/abhisek/Soft/c17.02'
     #cloudy_path     =   '/home/abhisek/Soft/c17.02'
     logZ_ref        =   (logZ+4)*100
     logNHI_ref      =   logNHI*100
     logT_ref        =   (logT)*100
     z_ref           =   (z_re*1000000.)
-    input_File      =   '/home/abhisek/soft/cld/run/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
-    #input_File      =   '/home/abhisek/mega/NHI_check/test_NHI/T_4_CMB/cloudy/T_4_CMB/run/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
+    input_file      =   '/home/abhisek/mega/cloudy/cloudy/run/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ, 'logNHI=', logNHI,'T=', logT,'z=',z_re)
-
+    cloudy_run_path_and_file =[cloudy_path, input_file]
     # write input file and run cloudy
-    ions, params    =   cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-6.0, -2.0, 0.02], stop_NHI = logNHI, metal = logZ,T = 10**logT,sequential = True,z=z_re,CMB='CMB')
-    write_input(input_File, *ions, **params)
-    run(cloudy_path =   cloudy_path, input_file=input_File)
-
-    # write output tables
-    output_filename =   input_File.split('.in')[0] +  '.spC'
-    fits_filename   =   input_File.split('.in')[0] + '.fits'
-    store_table(ions=ions, output_file=output_filename, fits_filename=fits_filename)
+    ions, params    =   cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-6.0, -2.0, 0.5], stop_NHI = logNHI, metal = logZ,T = 10**logT,sequential = True,z=z_re,CMB='CMB',remove_dot_out_file = True)
+    write_input_and_run(cloudy_run_path_and_file, *ions, **params)
 
     return
 
@@ -145,6 +138,6 @@ with open('try.txt','w') as f:
 
 """
 
-pool = mp.Pool(processes=46)
+pool = mp.Pool(processes=3)
 results = [pool.apply_async(run_parallel, args=(NHI, Z, Q, mod,T,z_re)) for  NHI, Z, Q, mod,T,z_re in zip(logNHI, logZ, the_Q_values, uvb_models,logT,z_red)]
 output = [p.get() for p in results]
