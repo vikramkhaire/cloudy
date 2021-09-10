@@ -4,7 +4,7 @@ import os
 import numpy as np
 import astropy.table as tab
 import subprocess
-from write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
+from cgm_uvb.write_uvb_in_cloudy_format import write_uvb_in_cloudy_format
 
 def find_nearest_index(array, value):
     array = np.asarray(array)
@@ -37,7 +37,7 @@ def run(cloudy_path, input_file):
     return
 
 
-def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
+def write_input(file_name, *args, **kwargs):
 
     """
     :param file_name: the input filename where cloudy commands will be written
@@ -50,12 +50,11 @@ def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
             scale_He,
             stop_logNHI,
             constant_T,
-            optical_depth_twice,
             out_file_ext
     :return:
     """
 
-    f = open(cloudy_run_path_and_file[1], "w+")
+    f = open(file_name, "w+")
 
     if kwargs['uvb'] == 'KS18':
         uvb_statement =  'TABLE {} redshift = {} [scale = {}] [Q = {}] \n'.format(
@@ -143,32 +142,14 @@ def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
         scale_He_statement ='element helium abundance {} linear \n'.format(kwargs['scale_He'])
         f.write(scale_He_statement)
 
-    if kwargs['optical_depth_state'] is not None:
-        optical_depth_statement='{} optical depths \n'.format(kwargs['optical_depth_state'])
-        f.write(optical_depth_statement)
-
-    if kwargs['sphere'] is not None:
-        geometry_statement='sphere \n'
-        f.write(geometry_statement)
-
-    if kwargs['CMB'] is not None:
-        CMB_statement ='CMB [redshift = {}] \n'.format(kwargs['z'])
-        f.write(CMB_statement)
-
-    stop_statement = 'stop column density {:.2f} neutral H \n'.format(kwargs['stop_logNHI'])
+    stop_statement = 'stop column density {} neutral H \n'.format(kwargs['stop_logNHI'])
     f.write(stop_statement)
 
     if kwargs['constant_T'] is not None:
         temp_statement =  'constant temperature, t={} K [linear] \n'.format(kwargs['constant_T'])
         f.write(temp_statement)
-        if kwargs['constant_T'] <= 4000:
-            stop_temp_statement = 'stop temperature 30 \n' # avoiding default Temperature in cloudy
-            f.write(stop_temp_statement)
 
-    # new lines
-    increase_nzones = 'set nend 6000 \n' # for optically thick systems; by default total zones are just 1400
-    f.write(increase_nzones)
-
+    # new line
     save_hydrogen = 'save hydrogen conditions \".hydro\" last no clobber \n'
     f.write(save_hydrogen)
 
@@ -188,29 +169,18 @@ def write_input_and_run(cloudy_run_path_and_file, *args, **kwargs):
 
     f.close()
 
-    # Now run cloudy here
-
-    run(cloudy_path=cloudy_run_path_and_file[0], input_file=cloudy_run_path_and_file[1])
-
-    # storing tables in fits files
-    if kwargs['store_table']:
-
-        output_filename = cloudy_run_path_and_file[1].split('.in')[0] + '.spC'
-        store_table(ions = args, output_file = output_filename, stop_NHI = kwargs['stop_logNHI'],  remove_dot_out_file = kwargs['remove_dot_out_file'])
-
     return
 
 
 # this is the part one needs to change if one wants to change the cloudy program
 def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hden_vary=True, uvb = 'KS18', z=0.2,
-                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False,
-                           optical_depth_state = None, sphere = None, CMB = None, store_table = True, remove_dot_out_file = False ):
+                           T = None, metal = -1, stop_NHI = 15, abundances = 'solar_GASS10.abn', sequential = False):
     """
     :param uvb_Q:
     :param uvb_scale:
-    :param log_hden:
-    :param hden_vary: [initial_value, final_value, increment]; works in grid if hden_vary = True; else uses just one value
+    :param log_hden: [initial_value, final_value, increment]; works in grid if hden_vary = True; else uses just one value
         == initial_value
+    :param hden_vary:
     :param uvb:
     :param z:
     :param T: if not None it is taken as constant temperature, else cloudy will calculate from photoionization-thermal
@@ -219,26 +189,17 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
     :param stop_NHI:
     :param abundances:
     :param sequential: (False) by default allows cloudy to use all the cores in the system else while using multiprocessing make it True
-    :param optical_depth_state:
-    :param sphere:
-    :param CMB:
     :return:
     """
-
 
     cloudy_params = {'uvb': uvb, 'z' : z, 'uvb_scale': uvb_scale, 'uvb_Q' : uvb_Q,
                      'hden_vary' : hden_vary,
                      'log_metal': metal,
                      'constant_T': T,
                      'stop_logNHI': stop_NHI,
-                     'scale_He': 0.08156498,
-                     'optical_depth_state' : optical_depth_state,
-                     'sphere' : sphere,
-                     'CMB' : CMB,
+                     'scale_He': 0.081632653,
                      'abundances' : abundances,
-                     'sequential': sequential,
-                     'store_table': store_table,
-                     'remove_dot_out_file': remove_dot_out_file}
+                     'sequential': sequential}
     print(cloudy_params)
 
     if hden_vary :
@@ -260,90 +221,50 @@ def cloudy_params_defaults(uvb_Q = 18, uvb_scale = 1, log_hden = [-4, -4, 1], hd
             "Mg", "Mg+", "Mg+2",
             "Ne", "Ne+", "Ne+2", "Ne+3", "Ne+4", "Ne+5", "Ne+6", "Ne+7", "Ne+8",
             "Fe", "Fe+", "Fe+2",
-            "Na", "Na+", "Na+2","P+"]
+            "Na", "Na+", "Na+2"]
 
 
     return ions, cloudy_params
 
 
-def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot_out_file = False,  fits_filename = None):
-
-    # TODO later: add hden in cloudy.spC file then ...
-    #------------------ remove this
+def store_table(ions, output_file, fits_filename = None):
     # get hydrogen density array
     hydro_file = output_file.split('.')[0] + '.hydro'
-    try:
-        hydro = tab.Table.read(hydro_file, format='ascii')
+    hydro =  tab.Table.read(hydro_file, format = 'ascii')
+    hden_array = np.unique(hydro['HDEN'])
 
-        hden_array = np.unique(hydro['HDEN'])  # default in hydro file 'HDEN'
+    # read the cloudy output files
+    cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
-        # read the cloudy output files
-        cloudy_output = tab.Table.read(output_file, format='ascii')
+    for old_name, new_name in zip(cloudy_output.colnames, ions):
+        cloudy_output.rename_column (old_name, new_name)
 
-        for old_name, new_name in zip(cloudy_output.colnames, ions):
-            cloudy_output.rename_column(old_name, new_name)
+    cloudy_output.add_column(hden_array, name = 'hden' )
 
-        cloudy_output.add_column(hden_array, name='hden')
-        # ------------------ till now and uncomment below
-        # cloudy_output = tab.Table.read(output_file, format = 'ascii')
+    if fits_filename == None:
+        fits_filename = output_filename.split('.')[0] + 'fits'
 
-        if fits_filename==None:
-            fits_filename = output_file.split('.')[0] + '.fits'
-
-        cloudy_output.write(fits_filename, overwrite=True)
-
-        if remove_dot_out_file:
-            # check if the stop_column density reached; if not keep .out file for debugging
-            cloudy_out_file = output_file.split('.')[0] + '.out'
-            if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI <= tolerance:
-                os.remove(cloudy_out_file)
-            else:
-                print('stop NHI value did not reach, keeping {} file for debugging'.format(cloudy_out_file))
-
-    except:
-        print('store_table did not work for {} file'.format(hydro_file))
-
-
+    cloudy_output.write (fits_filename, overwrite = True)
 
     return
 
 
 """
-Example run :
+Example run : 
 #----give this
 uvb_Q=20
 cloudy_path = '/home/vikram/c17.02'
-input_file = '/home/vikram/cloudy_run/try.in'
-cloudy_run_path_and_file =[cloudy_path, input_file]
+input_File = '/home/vikram/cloudy_run/try.in'
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = true)
-write_input_and_run(cloudy_run_path_and_file, *ions, **params)
-#run(cloudy_path= cloudy_path, input_file= input_file)
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1])
+write_input(input_File, *ions, **params)
+run(cloudy_path= cloudy_path, input_file= input_File)
 
-from cloudy_run_abhisek import *
-uvb_Q=18
-cloudy_path = '/home/abhisek/Soft/c17.02'
-input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt_cmb_19.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, 0, 1],CMB='yes',stop_NHI=19)
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
+# write output tables
+output_filename =  input_File.split('.in')[0] + '.spC'
+fits_filename = input_File.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
 store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
 
-
-from cloudy_run_abhisek import *
-uvb_Q=18
-cloudy_path = '/home/abhisek/Soft/c17.02'
-input_file='/home/abhisek/Desktop/PHD_final/work/with_vikram/cloudy/cloudy/opt.in'
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],optical_depth_twice='double')
-write_input(input_file, *ions, **params)
-run(cloudy_path= cloudy_path, input_file= input_file)
-output_filename =  input_file.split('.in')[0] + '.spC'
-fits_filename = input_file.split('.in')[0] + '_Q{}'.format(uvb_Q) + '.fits'
-store_table(ions= ions, output_file= output_filename, fits_filename= fits_filename)
-
-t1=Table.read('opt_Q18.fits')
-t2=Table.read('noopt_Q18.fits')
 """
+
