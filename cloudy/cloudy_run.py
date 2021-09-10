@@ -272,32 +272,38 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
     #------------------ remove this
     # get hydrogen density array
     hydro_file = output_file.split('.')[0] + '.hydro'
-    hydro =  tab.Table.read(hydro_file, format = 'ascii')
+    try:
+        hydro = tab.Table.read(hydro_file, format='ascii')
 
-    hden_array = np.unique(hydro['HDEN']) # default in hydro file 'HDEN'
+        hden_array = np.unique(hydro['HDEN'])  # default in hydro file 'HDEN'
 
-    # read the cloudy output files
-    cloudy_output = tab.Table.read(output_file, format = 'ascii')
+        # read the cloudy output files
+        cloudy_output = tab.Table.read(output_file, format='ascii')
 
-    for old_name, new_name in zip(cloudy_output.colnames, ions):
-        cloudy_output.rename_column (old_name, new_name)
+        for old_name, new_name in zip(cloudy_output.colnames, ions):
+            cloudy_output.rename_column(old_name, new_name)
 
-    cloudy_output.add_column(hden_array, name = 'hden' )
-    #------------------ till now and uncomment below
-    #cloudy_output = tab.Table.read(output_file, format = 'ascii')
+        cloudy_output.add_column(hden_array, name='hden')
+        # ------------------ till now and uncomment below
+        # cloudy_output = tab.Table.read(output_file, format = 'ascii')
 
-    if fits_filename == None:
-        fits_filename = output_file.split('.')[0] + '.fits'
+        if fits_filename==None:
+            fits_filename = output_file.split('.')[0] + '.fits'
 
-    cloudy_output.write (fits_filename, overwrite = True)
+        cloudy_output.write(fits_filename, overwrite=True)
 
-    if remove_dot_out_file:
-        # check if the stop_column density reached; if not keep .out file for debugging
-        cloudy_out_file = output_file.split('.')[0] + '.out'
-        if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI <= tolerance:
-            os.remove(cloudy_out_file)
-        else:
-            print('stop NHI value did not reach, keeping {} file for debugging'.format(cloudy_out_file))
+        if remove_dot_out_file:
+            # check if the stop_column density reached; if not keep .out file for debugging
+            cloudy_out_file = output_file.split('.')[0] + '.out'
+            if abs(cloudy_output['H'][0] - 10 ** stop_NHI) / 10 ** stop_NHI <= tolerance:
+                os.remove(cloudy_out_file)
+            else:
+                print('stop NHI value did not reach, keeping {} file for debugging'.format(cloudy_out_file))
+
+    except:
+        print('store_table did not work for {} file'.format(hydro_file))
+
+
 
     return
 
