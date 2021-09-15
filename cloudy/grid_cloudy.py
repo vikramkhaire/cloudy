@@ -12,6 +12,7 @@ from cloudy.cloudy_run import cloudy_params_defaults
 import multiprocessing as mp
 import numpy as np
 
+
 def run_parallel(logNHI,logZ, uvb_Q, uvb,logT,z_re):
     cloudy_path     =   '/home/vikram/c17.02'
     #cloudy_path     =   '/home/abhisek/Soft/c17.02'
@@ -22,10 +23,15 @@ def run_parallel(logNHI,logZ, uvb_Q, uvb,logT,z_re):
     input_file      =   '/scratch/vikram/cloudy_run/abhisek/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
     print(uvb, 'Q=', uvb_Q, 'Z=', logZ, 'logNHI=', logNHI,'T=', logT,'z=',z_re)
     cloudy_run_path_and_file =[cloudy_path, input_file]
-    # write input file and run cloudy
-    ions, params    =   cloudy_params_defaults(uvb = uvb, uvb_Q=uvb_Q, log_hden=[-6.0, -2.0, 0.02], stop_NHI = logNHI, metal = logZ,T = 10**logT,
-        sequential = True,z=z_re,CMB='CMB',remove_dot_out_file = True)
-    write_input_and_run(cloudy_run_path_and_file, *ions, **params)
+    check_out= cloudy_run_path_and_file[1].split('.in')[0] + '.out'
+    if not os.path.isfile(check_out):
+        # write input file and run cloudy
+        ions, params = cloudy_params_defaults(uvb=uvb, uvb_Q=uvb_Q, log_hden=[-6.0, -2.0, 0.02], stop_NHI=logNHI,
+            metal=logZ, T=10 ** logT,
+            sequential=True, z=z_re, CMB='CMB', remove_dot_out_file=True)
+        write_input_and_run(cloudy_run_path_and_file, *ions, **params)
+    else:
+        print('output exists')
 
     return
 
