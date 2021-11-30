@@ -33,7 +33,7 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb,uvb = 'KS18'):
     return interpolation_function_list
 
 
-def get_nZT_array(output_filepath, identifier_redshift, identifier_logNH):
+def get_nZT_array(model_filepath, identifier_redshift, identifier_logNH):
     # hard coded things .....
     # trial files
     """
@@ -50,7 +50,7 @@ def get_nZT_array(output_filepath, identifier_redshift, identifier_logNH):
     logNHI_ref = identifier_logNH * 100
     z_ref = identifier_redshift * 1000000.
 
-    list_of_files = glob.glob(output_filepath + '/*NHI{:.0f}*z_{:.0f}.fits'.format(logNHI_ref, z_ref))
+    list_of_files = glob.glob(model_filepath + '/*NHI{:.0f}*z_{:.0f}.fits'.format(logNHI_ref, z_ref))
 
     logT_array = []
     logZ_array = []
@@ -71,13 +71,13 @@ def get_nZT_array(output_filepath, identifier_redshift, identifier_logNH):
     return nH_array, logZ_array, logT_array
 
 
-def get_interp_func_nZT(model_path, ions_to_use, output_filepath, identifier_redshift, identifier_logNH, uvb = 'KS18', uvb_Q ='18'):
+def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, identifier_logNH, uvb = 'KS18', uvb_Q ='18'):
 
-    nH_array, logZ_array, logT_array = get_nZT_array(output_filepath, identifier_redshift, identifier_logNH)
-
+    nH_array, logZ_array, logT_array = get_nZT_array(model_path, identifier_redshift, identifier_logNH)
+    print(logZ_array)
     # hardcoded for filenames
-    logNHI_ref = logNHI * 100
-    z_ref = (z_re * 1000000.)
+    logNHI_ref = identifier_logNH * 100
+    z_ref = (identifier_redshift * 1000000.)
 
     """
     we need data in this format 
@@ -89,17 +89,26 @@ def get_interp_func_nZT(model_path, ions_to_use, output_filepath, identifier_red
     #creating data for each ion
     interpolation_function_list = []
     for ion in ions_to_use:
-        data = np.zeros(len(nH_array), len(logZ_array), len(logT_array))
+        data = np.zeros((len(nH_array), len(logZ_array), len(logT_array)))
         for j in range(len(logZ_array)):
             for k in range(len(logT_array)):
                 logZ_ref = (logZ_array[j]+4)*100
                 logT_ref = logT_array[k]*100
-                model = 'try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
+                model = model_path + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
                 d = tab.Table.read(model)
                 data[:, j, k] = d[ion]
 
         f = RegularGridInterpolator((np.log10(nH_array), logZ_array, logT_array), data)
         interpolation_function_list.append(f)
 
-    return interpolation_function_lis
+    print(model)
+    return interpolation_function_list
 
+
+# test 3D interpolation
+model_path  = '/home/vikram/data/cloudy/Cloudy'
+NHI = 15.11
+redshift = 0.002377
+ions_to_use = ['Si+2', 'C+2']
+flist = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_logNH=NHI,
+    identifier_redshift=redshift)
