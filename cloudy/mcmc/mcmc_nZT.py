@@ -1,6 +1,4 @@
 import numpy as np
-import astropy.table as tab
-from scipy.interpolate import interp2d
 import matplotlib.pyplot as plt
 import emcee
 import corner
@@ -74,12 +72,12 @@ def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     """
     :param data_col: array with column densities of different metals
     :param sigma_col: corresponding errors
-    :param interp_logf: the interpolation function to give column density of same ions (in same order) from cloudy models
+    :param interp_logf: the interpolation function list to give column density of same ions (in same order) from cloudy models
     :param figname: figure name for the corner plot
     :return: flattened chain and number of dimensions
     """
-    # ------------------ here is a way to run code
 
+    # ------------------ here is a way to run code
     print(data_col, sigma_col)
 
     #interp_logf = get_interp_func(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb,uvb=uvb)

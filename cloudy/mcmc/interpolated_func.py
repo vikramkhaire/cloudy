@@ -1,15 +1,36 @@
-
+# list of custom interpolation functions for various projects.
 import numpy as np
 import astropy.table as tab
-from scipy.interpolate import interp1d
 from scipy.interpolate import interp2d
 from scipy.interpolate import RegularGridInterpolator
 import matplotlib.pyplot as plt
 import emcee
 import corner
-
 import os
 import glob
+
+#--- model interpolation for Aiswarya's project (23 March 2022)
+def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18')
+
+    logT = np.around(np.arange(3.8, 6, 0.01), decimals = 2)
+    #get nH array
+    logT_try = 4
+    model_try = model_path + '/try_Q{}_T{:.0f}.fits'.format(Q_uvb, logT_try*100)
+    model = tab.Table.read(model_try)
+    lognH = np.log10(np.array(model['hden']))
+
+    interpolation_function_list = []
+    for ion in ions_to_use:
+        z = np.zeros((len(lognH), len(logT)))
+        for i in range(len(logT)):
+            model = model_path + '/try_Q{}_T{:.0f}.fits'.format(uvb, Q_uvb,(logT[i])*100)
+            d = tab.Table.read(model)
+            z [:, i] = d[ion]
+        f = interp2d(lognH, logT, z.T)
+        interpolation_function_list.append(f)
+
+    return interpolation_function_list
+
 
 #----model interpolation
 def get_interp_func_nT(model_path, ions_to_use, Q_uvb,uvb = 'KS18'):
