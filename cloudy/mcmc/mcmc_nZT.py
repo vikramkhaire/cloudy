@@ -8,8 +8,18 @@ import corner
 #----for mcmc
 def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal = -1.0, Z_scaling = True):
     """
+    :param theta:  parameters [nH, Z and T]
+    :param interp_logf: interpolation function
+    :param data_col: data column density array
+    :param sigma_col: errors on data_col
+    :param reference_log_metal: to scale metallicity if Z_scaling below is True
+    :param Z_scaling:
+    :return: log of likelihood
+    """
+
+    """
     For a gaussian distributed errors
-    :param theta: parameters [nH, Z]
+    :param theta: parameters [nH, Z and T]
     :param x: data x
     :param y: data y
     :param yerr: data err
@@ -46,6 +56,14 @@ def log_prior(theta):
     return -np.inf
 
 def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
+    """
+    :param theta:
+    :param interp_func:
+    :param data_col:
+    :param sigma_col:
+    :param Z_scaling:
+    :return:
+    """
     log_p = log_prior(theta) + \
             log_likelihood(theta, interp_func, data_col, sigma_col, Z_scaling = Z_scaling)
 
@@ -53,6 +71,13 @@ def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
 
 
 def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
+    """
+    :param data_col: array with column densities of different metals
+    :param sigma_col: corresponding errors
+    :param interp_logf: the interpolation function to give column density of same ions (in same order) from cloudy models
+    :param figname: figure name for the corner plot
+    :return: flattened chain and number of dimensions
+    """
     # ------------------ here is a way to run code
 
     print(data_col, sigma_col)
