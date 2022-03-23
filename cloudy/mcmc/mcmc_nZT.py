@@ -1,15 +1,12 @@
-
 import numpy as np
 import astropy.table as tab
-from scipy.interpolate import interp1d
 from scipy.interpolate import interp2d
 import matplotlib.pyplot as plt
 import emcee
 import corner
 
-
 #----for mcmc
-def log_likelihood(theta, interp_logf, obs_ion_col, col_err, reference_log_metal = -1.0, Z_scaling = True):
+def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal = -1.0, Z_scaling = True):
     """
     For a gaussian distributed errors
     :param theta: parameters [nH, Z]
@@ -23,7 +20,7 @@ def log_likelihood(theta, interp_logf, obs_ion_col, col_err, reference_log_metal
     if Z_scaling:
         # get metal ion column density for n_H and Z = 0.1
         col = []
-        for i in range(len(obs_ion_col)):
+        for i in range(len(data_col)):
             col_mod = interp_logf[i](lognH, logT)[0]
             col.append(col_mod)
 
@@ -33,11 +30,11 @@ def log_likelihood(theta, interp_logf, obs_ion_col, col_err, reference_log_metal
 
     else:
         model_col = []
-        for i in range(len(obs_ion_col)):
+        for i in range(len(data_col)):
             col_mod = interp_logf[i](lognH, logT, logZ)[0]
             model_col.append(col_mod)
 
-    lnL = -0.5 * np.sum(np.log(2 * np.pi * col_err ** 2) + (obs_ion_col - model_col) ** 2 / col_err ** 2)
+    lnL = -0.5 * np.sum(np.log(2 * np.pi * sigma_col ** 2) + (data_col - model_col) ** 2 / sigma_col ** 2)
 
     return lnL
 
@@ -50,20 +47,17 @@ def log_prior(theta):
 
 def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
     log_p = log_prior(theta) + \
-            log_likelihood(theta, interp_logf = interp_func, obs_ion_col = data_col, col_err = sigma_col, Z_scaling = Z_scaling)
+            log_likelihood(theta, interp_func, data_col, sigma_col, Z_scaling = Z_scaling)
 
     return log_p
 
 
-def run_mcmc(model_path, Q_uvb, ions_to_use, data_col, sigma_col, uvb = 'KS18', figname = 'testT.pdf'):
-    # run_mcmc(model_Q= model, ions_to_use= ions)
+def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     # ------------------ here is a way to run code
-    truths = [-4, -1, 4]  # (lognH, logZ, logT) true values
-    number_of_ions = len(ions_to_use)
 
     print(data_col, sigma_col)
 
-    interp_logf = get_interp_func(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb,uvb=uvb)
+    #interp_logf = get_interp_func(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb,uvb=uvb)
 
     # Here we'll set up the computation. emcee combines multiple "walkers",
     # each of which is its own MCMC chain. The number of trace results will
