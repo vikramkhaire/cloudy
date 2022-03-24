@@ -80,7 +80,6 @@ def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     # ------------------ here is a way to run code
     print(data_col, sigma_col)
 
-    #interp_logf = get_interp_func(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb,uvb=uvb)
 
     # Here we'll set up the computation. emcee combines multiple "walkers",
     # each of which is its own MCMC chain. The number of trace results will

@@ -10,7 +10,7 @@ import os
 import glob
 
 #--- model interpolation for Aiswarya's project (23 March 2022)
-def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18')
+def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18')
 
     logT = np.around(np.arange(3.8, 6, 0.01), decimals = 2)
     #get nH array
