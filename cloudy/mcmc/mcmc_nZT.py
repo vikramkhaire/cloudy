@@ -49,7 +49,7 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
 def log_prior(theta):
     lognH, logZ, logT =  theta
     # flat prior
-    if -4.7 < lognH < -2.0 and -2.0 < logZ < 1.0 and 4.0 < logT < 5.5:   # Better result when ranges are same as grids.
+    if -6 < lognH < 1 and -2.0 < logZ < 1.5 and 3.8 < logT < 6:   # Better result when ranges are same as grids.
         return 0.0
     return -np.inf
 
@@ -86,13 +86,13 @@ def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     # be nwalkers * nsteps
 
     ndim = 3  # number of parameters in the model
-    nwalkers = 50  # number of MCMC walkers
-    nsteps = 10000  # number of MCMC steps to take
+    nwalkers = 100  # number of MCMC walkers
+    nsteps = 40000  # number of MCMC steps to take
 
     # set theta near the maximum likelihood, with
-    n_guess = np.random.uniform(-4.68, -2.0, nwalkers)
-    z_guess = np.random.uniform(-2.0, 1.0, nwalkers)
-    T_guess = np.random.uniform(4.0, 5.5, nwalkers)
+    n_guess = np.random.uniform(-5, -1.0, nwalkers)
+    z_guess = np.random.uniform(-2.0, 0.5, nwalkers)
+    T_guess = np.random.uniform(3.8, 6.0, nwalkers)
     starting_guesses = np.vstack((n_guess, z_guess, T_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:

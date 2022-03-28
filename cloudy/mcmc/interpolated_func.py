@@ -10,7 +10,7 @@ import os
 import glob
 
 #--- model interpolation for Aiswarya's project (23 March 2022)
-def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18')
+def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
 
     logT = np.around(np.arange(3.8, 6, 0.01), decimals = 2)
     #get nH array
@@ -23,7 +23,7 @@ def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18')
     for ion in ions_to_use:
         z = np.zeros((len(lognH), len(logT)))
         for i in range(len(logT)):
-            model = model_path + '/try_Q{}_T{:.0f}.fits'.format(uvb, Q_uvb,(logT[i])*100)
+            model = model_path + '/try_Q{}_T{:.0f}.fits'.format(Q_uvb, logT[i]*100)
             d = tab.Table.read(model)
             z [:, i] = d[ion]
         f = interp2d(lognH, logT, z.T)
@@ -125,7 +125,7 @@ def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, identifier
     print(model)
     return interpolation_function_list
 
-
+"""
 # test 3D interpolation
 model_path  = '/home/vikram/data/cloudy/Cloudy'
 NHI = 15.11
@@ -133,3 +133,5 @@ redshift = 0.002377
 ions_to_use = ['Si+2', 'C+2']
 flist = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_logNH=NHI,
     identifier_redshift=redshift)
+"""
+
