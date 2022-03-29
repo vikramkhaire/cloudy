@@ -1,5 +1,6 @@
 from cloudy.mcmc.mcmc_nZT import run_mcmc
 from cloudy.mcmc.interpolated_func import get_interp_func_nT_aiswarya as interpol
+import numpy as np
 
 model_path = '/home/vikram/iist_projects/aiswarya/output/'
 
@@ -18,8 +19,12 @@ sigma_col_log = [0.03, 0.09, 0.05, 0.10, 0.04]
 
 Q_uvb= '18'
 uvb = 'KS18'
+figname = 'all_ions_high_T'
 
 interp_logf = interpol(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb, uvb=uvb)
 
-run_mcmc(data_col = data_col_log, sigma_col =sigma_col_log, interp_logf = interp_logf, figname = 'testT.pdf')
+flat_samples, ndim  = run_mcmc(data_col = data_col_log, sigma_col =sigma_col_log, interp_logf = interp_logf, figname = figname + '.pdf')
 
+# file to save mcmc chain
+save_file_name = figname
+np.save(save_file_name, flat_samples)
