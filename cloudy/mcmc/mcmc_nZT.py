@@ -34,7 +34,7 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
 
         # scale the column densities by the metallicity Z
         metal_scaling_linear = 10 ** logZ / 10 ** reference_log_metal
-        model_col = np.log10(np.array(col) * metal_scaling_linear)
+        model_col = np.log10(np.clip(col, 1e-10, 1e22) * metal_scaling_linear)
 
     else:
         model_col = []
@@ -49,7 +49,7 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
 def log_prior(theta):
     lognH, logZ, logT =  theta
     # flat prior
-    if -6 < lognH < 1 and -2.0 < logZ < 1.5 and 3.8 < logT < 6:   # Better result when ranges are same as grids.
+    if -3 < lognH <2.5 and -2.0 < logZ < 1.5 and 5.0 < logT < 6:   # Better result when ranges are same as grids.
         return 0.0
     return -np.inf
 
@@ -68,7 +68,7 @@ def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
     return log_p
 
 
-def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
+def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =10000, ndim =3, figname = 'testT.pdf'):
     """
     :param data_col: array with column densities of different metals
     :param sigma_col: corresponding errors
@@ -85,14 +85,14 @@ def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     # each of which is its own MCMC chain. The number of trace results will
     # be nwalkers * nsteps
 
-    ndim = 3  # number of parameters in the model
-    nwalkers = 100  # number of MCMC walkers
-    nsteps = 40000  # number of MCMC steps to take
+    ndim = ndim  # number of parameters in the model
+    nwalkers = 50  # number of MCMC walkers
+    nsteps = 15000  # number of MCMC steps to take
 
     # set theta near the maximum likelihood, with
-    n_guess = np.random.uniform(-5, -1.0, nwalkers)
+    n_guess = np.random.uniform(-2, 1.0, nwalkers)
     z_guess = np.random.uniform(-2.0, 0.5, nwalkers)
-    T_guess = np.random.uniform(3.8, 6.0, nwalkers)
+    T_guess = np.random.uniform(5.0, 6.0, nwalkers)
     starting_guesses = np.vstack((n_guess, z_guess, T_guess)).T  # initialise at a tiny sphere
 
     # Here's the function call where all the work happens:
@@ -105,10 +105,10 @@ def run_mcmc(data_col, sigma_col, interp_logf, figname = 'testT.pdf'):
     thin = int(np.mean(tau) / 2)  # use this number for flattning the sample as done below
     #thin = 100
     flat_samples = sampler.get_chain(discard=thin * 20, thin= 5, flat=True)
-    # we are discarding some initial steps roughly 5 times the autocorr_time steps
-    # then we thin by about half the autocorrelation time steps for plotting => one does not have to do this step
+    # we are discarding some initial steps roughly 10 times the autocorr_time steps
+    # then we thin by 5 (or if thin =  thin; half the autocorrelation time steps) for plotting => one does not have to do this step
 
-    labels = [r'log$n_H$', 'log Z', 'log T']
+    labels = [r'log $n_H$', 'log Z', 'log T']
     #uvb_q= int((model_Q.split('try_Q')[-1]).split('.fits')[0])
 
     #if Q_uvb == true_Q:
