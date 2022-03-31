@@ -122,16 +122,18 @@ def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, identifier
         f = RegularGridInterpolator((np.log10(nH_array), logZ_array, logT_array), data)
         interpolation_function_list.append(f)
 
-    print(model)
+    #print(model)
     return interpolation_function_list
 
 """
 # test 3D interpolation
 model_path  = '/home/vikram/data/cloudy/Cloudy'
-NHI = 15.11
-redshift = 0.002377
+NHI = 14.77
+redshift = 0.12389
 ions_to_use = ['Si+2', 'C+2']
 flist = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_logNH=NHI,
     identifier_redshift=redshift)
+
 """
+
 
