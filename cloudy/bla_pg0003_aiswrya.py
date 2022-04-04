@@ -40,7 +40,7 @@ sigma_col_log = [0.03, 0.09, 0.05, 0.10]
 
 Q_uvb= '18'
 uvb = 'KS18'
-figname = 'without_o6_interT'
+figname = 'without_o6'
 
 interp_logf = interpol(model_path = model_path, ions_to_use= ions_to_use, Q_uvb= Q_uvb, uvb=uvb)
 
