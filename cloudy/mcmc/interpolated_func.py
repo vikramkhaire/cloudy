@@ -54,7 +54,7 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb,uvb = 'KS18'):
     return interpolation_function_list
 
 
-def get_nZT_array(model_filepath, identifier_redshift, identifier_logNH):
+def get_nZT_array(model_filepath, identifier_redshift):
     # hard coded things .....
     # trial files
     """
@@ -68,10 +68,13 @@ def get_nZT_array(model_filepath, identifier_redshift, identifier_logNH):
 
     # input_file      =   '/scratch/vikram/cloudy_run/abhisek/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.in'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
 
-    logNHI_ref = identifier_logNH * 100
     z_ref = identifier_redshift * 1000000.
 
-    list_of_files = glob.glob(model_filepath + '/*NHI{:.0f}*z_{:.0f}.fits'.format(logNHI_ref, z_ref))
+    # assuming there is unique cloud (i.e same NHI) at each z value
+    #logNHI_ref = identifier_logNH * 100
+    #list_of_files = glob.glob(model_filepath + '/*NHI{:.0f}*z_{:.0f}.fits'.format(logNHI_ref, z_ref))
+    list_of_files = glob.glob(model_filepath + '/*z_{:.0f}.fits'.format(z_ref))
+
 
     logT_array = []
     logZ_array = []
