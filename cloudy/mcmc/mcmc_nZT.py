@@ -37,10 +37,12 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
         model_col = np.log10(np.clip(col, 1e-10, 1e22) * metal_scaling_linear)
 
     else:
-        model_col = []
+        col = []
         for i in range(len(data_col)):
-            col_mod = interp_logf[i](lognH, logT, logZ)[0]
-            model_col.append(col_mod)
+            col_mod = interp_logf[i](lognH, logZ, logT)[0]
+            col.append(col_mod)
+
+        model_col = np.log10(np.clip(col, 1e-10, 1e22)) # clip to prevent log 0 error
 
     lnL = -0.5 * np.sum(np.log(2 * np.pi * sigma_col ** 2) + (data_col - model_col) ** 2 / sigma_col ** 2)
 
