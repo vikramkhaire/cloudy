@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import emcee
 import corner
 from cloudy.mcmc.interpolated_func import  get_interp_func_nZT
+from cloudy.mcmc.mcmc_nZT import run_mcmc
 
+
+"""
 z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
        0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
        0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
@@ -15,7 +18,7 @@ model_path  = '/home/vikram/data/cloudy/Cloudy'
 output_path = ''
 
 for redshift in z_array:
-    figname = output_path + 'z_{}'
+    figname = output_path + '/' + 'z_{}'
 
     # find ions_to_use for absorber at z= redshift
 
@@ -35,4 +38,29 @@ for redshift in z_array:
     save_file_name = figname
     np.save(save_file_name, flat_samples)
 
+"""
 
+# testing mcmc code
+model_path  = '/home/vikram/data/cloudy/Cloudy'
+output_path = '/home/vikram/data/cloudy/output_test'
+
+# find ions_to_use for absorber at z= redshift
+
+redshift = 0.12389
+figname = output_path + '/'+ 'z_{}'.format(redshift)
+
+
+ions_to_use = ['O+5', 'N+4', 'C+3', 'Si+2', 'Si+3' ]
+
+data_col_log = [14.16, 12.98, 13.82, 12.35, 12.81]
+sigma_col_log = [0.17, 0.2, 0.1, 0.11, 0.21]
+
+# get interpolated functions
+func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_redshift=redshift)
+
+flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
+    figname=figname + '.pdf', Z_scaling=False)
+
+# file to save mcmc chain
+save_file_name = figname
+np.save(save_file_name, flat_samples)
