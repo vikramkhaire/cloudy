@@ -78,12 +78,25 @@ def get_nZT_array(model_filepath, identifier_redshift):
 
     logT_array = []
     logZ_array = []
+    logNHI_values = []
     for i in list_of_files:
         read_logZ = int(i.split('Z')[1].split('_')[0])
         logZ_array.append(read_logZ / 100 - 4)  # the file naming convention
 
         read_logT = int(i.split('logT')[1].split('_')[0])
         logT_array.append(read_logT / 100)
+
+        read_logNHI = int(i.split('NHI')[1].split('_')[0])
+        logNHI_values.append(read_logNHI)
+
+    # see if NHI values are real
+    unique_NHI_values = list(set(logNHI_values))
+    if len(unique_NHI_values) !=1:
+        print('There are ', len(unique_NHI_values), ' values of NHI. Stopping!')
+        break
+    else:
+        logNHI = unique_NHI_values[0]
+
 
     logZ_array = sorted(list(set(logZ_array)))
     logT_array = sorted(list(set(logT_array)))
@@ -92,12 +105,13 @@ def get_nZT_array(model_filepath, identifier_redshift):
     sample_data = tab.Table.read(list_of_files[0])
     nH_array = list(sample_data['hden'])
 
-    return nH_array, logZ_array, logT_array
+
+    return nH_array, logZ_array, logT_array, logNHI
 
 
-def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, identifier_logNH, uvb = 'KS18', uvb_Q ='18'):
+def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, uvb = 'KS18', uvb_Q ='18'):
 
-    nH_array, logZ_array, logT_array = get_nZT_array(model_path, identifier_redshift, identifier_logNH)
+    nH_array, logZ_array, logT_array, identifier_logNH = get_nZT_array(model_path, identifier_redshift)
     print(logZ_array)
     # hardcoded for filenames
     logNHI_ref = identifier_logNH * 100
