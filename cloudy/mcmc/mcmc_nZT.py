@@ -88,8 +88,8 @@ def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =10000, ndi
     # be nwalkers * nsteps
 
     ndim = ndim  # number of parameters in the model
-    nwalkers = 100  # number of MCMC walkers
-    nsteps = 100000  # number of MCMC steps to take
+    nwalkers = 50  # number of MCMC walkers
+    nsteps = 10000  # number of MCMC steps to take
 
     # set theta near the maximum likelihood, with
     n_guess = np.random.uniform(-6, -2, nwalkers)
