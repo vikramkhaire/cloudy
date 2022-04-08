@@ -8,6 +8,7 @@ import emcee
 import corner
 import os
 import glob
+import sys
 
 #--- model interpolation for Aiswarya's project (23 March 2022)
 def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
@@ -93,9 +94,9 @@ def get_nZT_array(model_filepath, identifier_redshift):
     unique_NHI_values = list(set(logNHI_values))
     if len(unique_NHI_values) !=1:
         print('There are ', len(unique_NHI_values), ' values of NHI. Stopping!')
-        break
+        sys.exit()
     else:
-        logNHI = unique_NHI_values[0]
+        logNHI = unique_NHI_values[0]/100
 
 
     logZ_array = sorted(list(set(logZ_array)))
@@ -136,7 +137,7 @@ def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, uvb = 'KS1
                 d = tab.Table.read(model)
                 data[:, j, k] = d[ion]
 
-        f = RegularGridInterpolator((np.log10(nH_array), logZ_array, logT_array), data)
+        f = RegularGridInterpolator((np.log10(nH_array), logZ_array, logT_array), data, bounds_error = False)
         interpolation_function_list.append(f)
 
     #print(model)
