@@ -57,7 +57,7 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
 def log_prior(theta):
     lognH, logZ, logT =  theta
     # flat prior
-    if -6 < lognH < -2 and -3.0 < logZ < 1 and 4 < logT < 6:   # Better result when ranges are same as grids.
+    if -6 < lognH < 0 and -3.0 < logZ < 1 and 4 < logT < 6:   # Better result when ranges are same as grids.
         return 0.0
     return -np.inf
 
@@ -76,7 +76,7 @@ def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
     return log_p
 
 
-def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =10000, ndim =3,  Z_scaling = True, figname = 'testT.pdf',):
+def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =20000, ndim =3,  Z_scaling = True, figname = 'testT.pdf',):
     """
     :param data_col: array with column densities of different metals
     :param sigma_col: corresponding errors

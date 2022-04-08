@@ -1,3 +1,13 @@
+#------------------
+# for reducing  numpy threads
+import os
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+#-----------------
+import multiprocessing as mp
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
@@ -7,20 +17,11 @@ import astropy.table as tab
 import sys
 
 
-z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
-       0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
-       0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
-       0.146789, 0.161068, 0.166588, 0.170062, 0.187731, 0.292317,
-       0.310529, 0.349368, 0.360841, 0.386094, 0.39346 , 0.42188 ,
-       0.423919, 0.424307, 0.44678 ])
-
-model_path  = '/home/vikram/data/cloudy/Cloudy'
-observation_path ='/home/vikram/data/cloudy/observations'
-output_path = '/home/vikram/data/cloudy/output'
-
-#for redshift in z_array:
-if 1:
-    redshift = z_array[0]
+def run_parallel(redshift):
+    # file paths:
+    model_path = '/home/vikram/data/cloudy/Cloudy'
+    observation_path = '/home/vikram/data/cloudy/observations'
+    output_path = '/home/vikram/data/cloudy/output'
 
     # find ions_to_use for absorber at z= redshift
     z_ref = redshift*1e6
@@ -51,6 +52,21 @@ if 1:
     save_file_name = figname
     np.save(save_file_name, flat_samples)
 
+
+    return
+
+
+z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
+       0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
+       0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
+       0.146789, 0.161068, 0.166588, 0.170062, 0.187731, 0.292317,
+       0.310529, 0.349368, 0.360841, 0.386094, 0.39346 , 0.42188 ,
+       0.423919, 0.424307, 0.44678 ])
+
+
+pool = mp.Pool(processes=6)
+results = [pool.apply_async(run_parallel, args=(redshift,)) for redshift in z_array]
+output = [p.get() for p in results]
 
 
 """
