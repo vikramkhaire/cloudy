@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import emcee
 import corner
 import math
+import multiprocessing as mp
 
 #----for mcmc
 def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal = -1.0, Z_scaling = True):
@@ -76,7 +77,7 @@ def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
     return log_p
 
 
-def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =20000, ndim =3,  Z_scaling = True, figname = 'testT.pdf',):
+def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =5000, ndim =3,  Z_scaling = True, figname = 'testT.pdf', parallel = False):
     """
     :param data_col: array with column densities of different metals
     :param sigma_col: corresponding errors
@@ -103,10 +104,20 @@ def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =20000, ndi
     T_guess = np.random.uniform(4.1, 5.5, nwalkers)
     starting_guesses = np.vstack((n_guess, z_guess, T_guess)).T  # initialise at a tiny sphere
 
-    # Here's the function call where all the work happens:
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior,
-        args=(interp_logf, np.array(data_col), np.array(sigma_col), Z_scaling))
-    sampler.run_mcmc(starting_guesses, nsteps, progress=True)
+
+    if parallel:
+        # somehow it makes it very slow :)
+        with mp.Pool() as pool:
+            # Here's the function call where all the work happens:
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior,
+                args=(interp_logf, np.array(data_col), np.array(sigma_col), Z_scaling), pool=pool)
+            sampler.run_mcmc(starting_guesses, nsteps, progress=True)
+    else:
+        # Here's the function call where all the work happens:
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior,
+            args=(interp_logf, np.array(data_col), np.array(sigma_col), Z_scaling))
+        sampler.run_mcmc(starting_guesses, nsteps, progress=True)
+
 
     # find out number of steps
     tau = sampler.get_autocorr_time()  # number of steps needed to forget the starting position

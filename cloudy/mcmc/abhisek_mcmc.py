@@ -1,11 +1,11 @@
 #------------------
 # for reducing  numpy threads
 import os
-os.environ["NUMEXPR_NUM_THREADS"] = "1"
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
+#os.environ["NUMEXPR_NUM_THREADS"] = "1"
+#os.environ["OMP_NUM_THREADS"] = "1"
+#os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+#os.environ["OPENBLAS_NUM_THREADS"] = "1"
+#os.environ["MKL_NUM_THREADS"] = "1"
 #-----------------
 import multiprocessing as mp
 import numpy as np
@@ -15,7 +15,7 @@ from cloudy.mcmc.interpolated_func import  get_interp_func_nZT
 from cloudy.mcmc.mcmc_nZT import run_mcmc
 import astropy.table as tab
 import sys
-
+import time
 
 def run_parallel(redshift):
     # file paths:
@@ -41,32 +41,55 @@ def run_parallel(redshift):
     figname = output_path + '/' + (observed_file.split('/')[-1]).split('.dat')[0]
     print('Output File name and Path', figname)
 
+
     # get interpolated functions
     func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_redshift=redshift)
 
 
     flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
-        figname=figname + '.pdf', Z_scaling = False)
+        figname=figname + '.pdf', Z_scaling = False, parallel= True)
 
     # file to save mcmc chain
     save_file_name = figname
     np.save(save_file_name, flat_samples)
 
+    print('*************** saved output for', redshift)
 
     return
 
 
-z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
-       0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
-       0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
-       0.146789, 0.161068, 0.166588, 0.170062, 0.187731, 0.292317,
-       0.310529, 0.349368, 0.360841, 0.386094, 0.39346 , 0.42188 ,
-       0.423919, 0.424307, 0.44678 ])
+z_array= np.array([0.004409, 0.005602, 0.042275])#, 0.043318, 0.059285, 0.060158])
+
+#       0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
+#       0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
+#       0.146789, 0.161068, 0.166588, 0.170062, 0.187731, 0.292317,
+#       0.310529, 0.349368, 0.360841, 0.386094, 0.39346 , 0.42188 ,
+#       0.423919, 0.424307, 0.44678 ])
 
 
-pool = mp.Pool(processes=6)
-results = [pool.apply_async(run_parallel, args=(redshift,)) for redshift in z_array]
-output = [p.get() for p in results]
+run_parallel(z_array[0])
+
+
+#pool = mp.Pool(processes=3)
+#pool.imap_unordered(run_parallel, z_array)
+"""
+if __name__=='__main__':
+    starttime = time.time()
+    pool = mp.Pool(processes=3)
+    pool.map(run_parallel, z_array)
+    pool.close()
+    print('That took {} seconds'.format(time.time() - starttime))
+
+"""
+
+#with mp.Pool(processes=4) as pool:
+#    for i in pool.imap_unordered(run_parallel, z_array):
+#        print(i)
+# print same numbers in arbitrary order
+#for i in pool.imap_unordered(f, range(10)):
+#    print(i)
+#results = [pool.apply_async(run_parallel, args=(redshift,)) for redshift in z_array]
+#output = [p.get() for p in results]
 
 
 """
