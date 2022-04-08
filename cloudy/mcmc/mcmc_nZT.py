@@ -77,7 +77,7 @@ def log_posterior(theta, interp_func, data_col, sigma_col, Z_scaling = True):
     return log_p
 
 
-def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =5000, ndim =3,  Z_scaling = True, figname = 'testT.pdf', parallel = False):
+def run_mcmc(data_col, sigma_col, interp_logf, nwalkers = 50, nsteps =15000, ndim =3,  Z_scaling = True, figname = 'testT.pdf', parallel = False):
     """
     :param data_col: array with column densities of different metals
     :param sigma_col: corresponding errors
