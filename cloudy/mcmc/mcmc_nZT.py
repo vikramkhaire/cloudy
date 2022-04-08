@@ -44,7 +44,8 @@ def log_likelihood(theta, interp_logf, data_col, sigma_col, reference_log_metal 
             col.append(col_mod)
 
         # replacing nan values with column of 1e-10
-        col = [1e-10 if math.isnan(x) else x for x in col]
+        #col = [1e-10 if math.isnan(x) else x for x in col]
+        col= np.nan_to_num(col, nan= 1e-10, copy = False)
 
         model_col = np.log10(np.clip(col, 1e-10, 1e22)) # clip to prevent log 0 error
         #print(model_col, [lognH, logZ, logT]) #....for debug

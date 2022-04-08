@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import emcee
-import corner
+import glob
 from cloudy.mcmc.interpolated_func import  get_interp_func_nZT
 from cloudy.mcmc.mcmc_nZT import run_mcmc
+import astropy.table as tab
+import sys
 
 
-"""
 z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
        0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
        0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
@@ -15,17 +15,30 @@ z_array= np.array([0.004409, 0.005602, 0.042275, 0.043318, 0.059285, 0.060158,
        0.423919, 0.424307, 0.44678 ])
 
 model_path  = '/home/vikram/data/cloudy/Cloudy'
-output_path = ''
+observation_path ='/home/vikram/data/cloudy/observations'
+output_path = '/home/vikram/data/cloudy/output'
 
-for redshift in z_array:
-    figname = output_path + '/' + 'z_{}'
+#for redshift in z_array:
+if 1:
+    redshift = z_array[0]
 
     # find ions_to_use for absorber at z= redshift
+    z_ref = redshift*1e6
+    list_of_files = glob.glob(observation_path + '/z_{:.0f}*.dat'.format(z_ref))
+    if len(list_of_files) !=1:
+        print('more observations at single redshift', list_of_files)
+        sys.exit()
+    else:
+        observed_file = list_of_files[0]
 
-    ions_to_use =
+    data = tab.Table.read(observed_file, format= 'ascii')
+    ions_to_use =data['ions']
+    data_col_log = data['N']
+    sigma_col_log = data['eN']
 
-    data_col_log = []
-    sigma_col_log = []
+    # setting figure name
+    figname = output_path + '/' + (observed_file.split('/')[-1]).split('.dat')[0]
+    print('Output File name and Path', figname)
 
     # get interpolated functions
     func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_redshift=redshift)
@@ -38,8 +51,9 @@ for redshift in z_array:
     save_file_name = figname
     np.save(save_file_name, flat_samples)
 
-"""
 
+
+"""
 # testing mcmc code
 model_path  = '/home/vikram/data/cloudy/Cloudy'
 output_path = '/home/vikram/data/cloudy/output_test'
@@ -64,3 +78,5 @@ flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, in
 # file to save mcmc chain
 save_file_name = figname
 np.save(save_file_name, flat_samples)
+"""
+
