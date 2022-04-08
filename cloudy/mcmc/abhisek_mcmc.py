@@ -34,6 +34,7 @@ def run_parallel(redshift):
 
     data = tab.Table.read(observed_file, format= 'ascii')
     ions_to_use =data['ions']
+    print(list(ions_to_use))
     data_col_log = data['N']
     sigma_col_log = data['eN']
 
@@ -47,7 +48,7 @@ def run_parallel(redshift):
 
 
     flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
-        figname=figname + '.pdf', Z_scaling = False, parallel= True)
+        figname=figname + '.pdf', Z_scaling = False, parallel= False)
 
     # file to save mcmc chain
     save_file_name = figname
@@ -58,8 +59,8 @@ def run_parallel(redshift):
     return
 
 
-z_array= np.array([0.004409, 0.005602, 0.042275])#, 0.043318, 0.059285, 0.060158])
-
+#z_array= np.array([0.004409, 0.005602])#, 0.043318, 0.059285, 0.060158])
+z_array = np.array([0.004409,0.077701])
 #       0.063275, 0.077493, 0.077701, 0.078068, 0.094864, 0.098787,
 #       0.113918, 0.123596, 0.12389 , 0.124783, 0.135467, 0.140754,
 #       0.146789, 0.161068, 0.166588, 0.170062, 0.187731, 0.292317,
@@ -67,11 +68,15 @@ z_array= np.array([0.004409, 0.005602, 0.042275])#, 0.043318, 0.059285, 0.060158
 #       0.423919, 0.424307, 0.44678 ])
 
 
-run_parallel(z_array[0])
 
 
 #pool = mp.Pool(processes=3)
 #pool.imap_unordered(run_parallel, z_array)
+
+
+if __name__ == '__main__':
+    with mp.Pool(2) as p:
+        p.map(run_parallel, z_array)
 """
 if __name__=='__main__':
     starttime = time.time()
