@@ -44,6 +44,8 @@ def run_parallel(redshift):
 
     final_filename = figname + '.pdf'
     if not os.path.exists(final_filename):
+        print('file does not exits', final_filename)
+
         # get interpolated functions
         try:
             func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use,
@@ -60,7 +62,7 @@ def run_parallel(redshift):
             print(e)
             print('exception at ', redshift)
     else:
-        print('Calculation exists, see', final_filenamei)
+        print('Calculation exists, see', final_filename)
 
 
 
