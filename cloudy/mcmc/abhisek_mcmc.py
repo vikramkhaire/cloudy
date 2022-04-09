@@ -42,20 +42,26 @@ def run_parallel(redshift):
     figname = output_path + '/' + (observed_file.split('/')[-1]).split('.dat')[0]
     print('Output File name and Path', figname)
 
+    final_filename = figname + '.pdf'
+    if not os.path.exists(final_filename):
+        # get interpolated functions
+        try:
+            func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use,
+                identifier_redshift=redshift)
 
-    # get interpolated functions
-    try:
-        func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use, identifier_redshift=redshift)
+            flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
+                figname=figname + '.pdf', Z_scaling=False, parallel=False)
 
-        flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
-            figname=figname + '.pdf', Z_scaling=False, parallel=False)
+            # file to save mcmc chain
+            save_file_name = figname
+            np.save(save_file_name, flat_samples)
+            print('*************** saved output for', redshift)
+        except Exception as e:
+            print(e)
+            print('exception at ', redshift)
+    else:
+        print('Calculation exists, see', final_filenamei)
 
-        # file to save mcmc chain
-        save_file_name = figname
-        np.save(save_file_name, flat_samples)
-        print('*************** saved output for', redshift)
-    except:
-        print('exception at ', redshift)
 
 
     return
