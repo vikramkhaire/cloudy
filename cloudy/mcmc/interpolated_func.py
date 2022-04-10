@@ -55,7 +55,7 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
     return interpolation_function_list
 
 
-def create_missing_models (logT_array, logZ_array, example_file, interpolation_method = 'linear', variable  = 'T'):
+def create_missing_models (missing_logT_array, missing_logZ_array, example_file, interpolation_method = 'linear', variable  = 'T'):
     """
     :param logT_array:
     :param logZ_array:
@@ -73,9 +73,18 @@ def create_missing_models (logT_array, logZ_array, example_file, interpolation_m
 
     data = tab.Table.read(example_file)
     column_names  = data.colnames
-    
+
+
     if variable == 'T':
-        for T in
+        for Z in missing_logZ_array:
+            logZ_ref = (Z+4)*100
+            find_T_array = []
+            list_of_files = glob.glob(model_path + '/' + first_part + 'Z{:.0f}*_z_{:.0f}.fits'.format(logZ_ref, z_ref))
+            for i in list_of_files:
+                read_logT = int(i.split('logT')[1].split('_')[0])
+                find_T_array.append(read_logT / 100)
+
+
 
     model = model_path + '/'+ first_part + 'Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
 
