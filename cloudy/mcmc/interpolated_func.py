@@ -55,6 +55,32 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
     return interpolation_function_list
 
 
+def create_missing_models (logT_array, logZ_array, example_file, interpolation_method = 'linear', variable  = 'T'):
+    """
+    :param logT_array:
+    :param logZ_array:
+    :param example_file:
+    :param interpolation_method:
+    :param variable: interpolating on T since there are supposed to be more models with T than Z
+    :return:
+    """
+
+    # getting file info
+    logNHI_ref = ((example_file.split('/')[-1]).split('NHI')[-1]).split('_')[0]
+    z_ref = ((example_file.split('/')[-1]).split('z_')[-1]).split('.fits')[0]
+    model_path = example_file.split('/')[0]
+    first_part = (example_file.split('/')[-1]).split('Z')[0]
+
+    data = tab.Table.read(example_file)
+    column_names  = data.colnames
+    
+    if variable == 'T':
+        for T in
+
+    model = model_path + '/'+ first_part + 'Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
+
+    return
+
 def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'):
     # hard coded things .....
     # trial files
@@ -121,7 +147,7 @@ def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'
                     missing_T_array.append(T)
 
         # fill the missing values
-        
+
 
 
     # get nH array
