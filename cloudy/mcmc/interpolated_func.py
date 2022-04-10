@@ -34,7 +34,7 @@ def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
 
 
 #----model interpolation
-def get_interp_func_nT(model_path, ions_to_use, Q_uvb,uvb = 'KS18'):
+def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
     logT = np.around(np.arange(4.0, 5.50, 0.02), decimals = 2)
     #get nH array
     logT_try = 4
@@ -55,7 +55,7 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb,uvb = 'KS18'):
     return interpolation_function_list
 
 
-def get_nZT_array(model_filepath, identifier_redshift):
+def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'):
     # hard coded things .....
     # trial files
     """
@@ -101,6 +101,28 @@ def get_nZT_array(model_filepath, identifier_redshift):
 
     logZ_array = sorted(list(set(logZ_array)))
     logT_array = sorted(list(set(logT_array)))
+
+    # find if the files are missing
+    missing_files =  len(logT_array) * len(logT_array) - len(list_of_files)
+    if missing_files > 0:
+        print('Warning: There are {} files missing'.format(missing_files))
+        # find the files that are missing
+        logNHI_ref = logNHI * 100
+        missing_T_array = []
+        missing_Z_array = []
+        for Z in logZ_array:
+            logZ_ref = (Z+4)*100
+            for T in logT_array:
+                logT_ref = T*100
+                file_check = model_filepath + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
+                if not os.path.exists(file_check):
+                    print('found missing model for log Z {} and log T {}'.format(Z, T))
+                    missing_Z_array.append(Z)
+                    missing_T_array.append(T)
+
+        # fill the missing values
+        
+
 
     # get nH array
     sample_data = tab.Table.read(list_of_files[0])
