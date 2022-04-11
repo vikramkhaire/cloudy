@@ -10,6 +10,11 @@ import os
 import glob
 import sys
 
+
+def find_nearest(array, value):
+    idx = (np.abs(array - value)).argmin()
+    return array[idx], idx
+
 #--- model interpolation for Aiswarya's project (23 March 2022)
 def get_interp_func_nT_aiswarya(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
 
@@ -55,12 +60,12 @@ def get_interp_func_nT(model_path, ions_to_use, Q_uvb, uvb = 'KS18'):
     return interpolation_function_list
 
 
-def create_missing_models (missing_logT_array, missing_logZ_array, example_file, interpolation_method = 'linear', variable  = 'T'):
+def create_missing_models (missing_logT_array, missing_logZ_array, example_file, variable  = 'T'):
+    # under linear interpolation
     """
     :param logT_array:
     :param logZ_array:
     :param example_file:
-    :param interpolation_method:
     :param variable: interpolating on T since there are supposed to be more models with T than Z
     :return:
     """
@@ -76,7 +81,7 @@ def create_missing_models (missing_logT_array, missing_logZ_array, example_file,
 
 
     if variable == 'T':
-        for Z in missing_logZ_array:
+        for Z, logT in zip(missing_logZ_array, missing_logT_array):
             logZ_ref = (Z+4)*100
             find_T_array = []
             list_of_files = glob.glob(model_path + '/' + first_part + 'Z{:.0f}*_z_{:.0f}.fits'.format(logZ_ref, z_ref))
@@ -84,9 +89,29 @@ def create_missing_models (missing_logT_array, missing_logZ_array, example_file,
                 read_logT = int(i.split('logT')[1].split('_')[0])
                 find_T_array.append(read_logT / 100)
 
+            logT_array = np.sort(np.array(set(find_T_array)))
+            valueT1, indexT1 = find_nearest(logT_array, logT)
+            logT_array_dummy = np.delete(logT_array, indexT1)
+            valueT2, indexT2 =find_nearest(logT_array_dummy, logT)
 
+            # linear interpolation
+            # y(x) = y1 + (x-x1)*(y2-y1)/(x2-x1) ==> N(T)  = N1 + [(T-T1)/(T2-T1)] (N2-N1)
+            fact= (10**logT - 10**valueT1)/ (10**valueT2 - 10**valueT1)
+            # filling
+            print('imputing missing values for logZ {} and logT {} and fact {}'.format(Z, logT, fact))
 
-    model = model_path + '/'+ first_part + 'Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
+            new_data = tab.Table()
+            table1 = tab.Table.read(model_path +'/' + first_part +
+                                    'Z{:.0f}_NHI{}_logT{:.0f}_z_{}.fits'.format(logZ_ref, logNHI_ref, valueT1*100, z_ref))
+            table2 = tab.Table.read(model_path +'/' + first_part +
+                                    'Z{:.0f}_NHI{}_logT{:.0f}_z_{}.fits'.format(logZ_ref, logNHI_ref, valueT2*100, z_ref))
+            for col in column_names:
+                new_data[col] = table1[col] + fact * (table2[col] - table1[col])
+
+            filename_to_write =  model_path+ '/' + first_part + \
+                                 'Z{:.0f}_NHI{}_logT{:.0f}_z_{}_dummy.fits'.format(logZ_ref, logNHI_ref, logT*100, z_ref)
+            new_data.write(filename_to_write, overwrite = True)
+
 
     return
 
@@ -156,7 +181,7 @@ def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'
                     missing_T_array.append(T)
 
         # fill the missing values
-
+        create_missing_models(missing_T_array, missing_Z_array, example_file=list_of_files[0])
 
 
     # get nH array
@@ -191,7 +216,14 @@ def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, uvb = 'KS1
                 logZ_ref = (logZ_array[j]+4)*100
                 logT_ref = logT_array[k]*100
                 model = model_path + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref,logNHI_ref,logT_ref,z_ref)
-                d = tab.Table.read(model)
+                try:
+                    d = tab.Table.read(model)
+                except:
+                    print('searching for imputed dummy file (logZ, logT)', logT_ref/100 -4, logT_ref/100)
+                    model = model_path + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}_dummy.fits'.\
+                        format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
+                    d = tab.Table.read(model)
+
                 data[:, j, k] = d[ion]
 
         f = RegularGridInterpolator((np.log10(nH_array), logZ_array, logT_array), data, bounds_error = False)
