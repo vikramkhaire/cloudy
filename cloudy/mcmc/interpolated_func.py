@@ -84,11 +84,13 @@ def create_missing_models (missing_logT_array, missing_logZ_array, example_file,
         for Z, logT in zip(missing_logZ_array, missing_logT_array):
             logZ_ref = (Z+4)*100
             find_T_array = []
-            list_of_files = glob.glob(model_path + '/' + first_part + 'Z{:.0f}*_z_{:.0f}.fits'.format(logZ_ref, z_ref))
+            list_of_files = glob.glob(model_path + '/' + first_part + 'Z{:.0f}*_z_{}.fits'.format(logZ_ref, z_ref))
             for i in list_of_files:
                 read_logT = int(i.split('logT')[1].split('_')[0])
                 find_T_array.append(read_logT / 100)
 
+            print(find_T_array)
+            
             logT_array = np.sort(np.array(set(find_T_array)))
             valueT1, indexT1 = find_nearest(logT_array, logT)
             logT_array_dummy = np.delete(logT_array, indexT1)
@@ -163,7 +165,7 @@ def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'
     logT_array = sorted(list(set(logT_array)))
 
     # find if the files are missing
-    missing_files =  len(logT_array) * len(logT_array) - len(list_of_files)
+    missing_files =  len(logT_array) * len(logZ_array) - len(list_of_files)
     if missing_files > 0:
         print('Warning: There are {} files missing'.format(missing_files))
         # find the files that are missing
