@@ -73,7 +73,7 @@ def create_missing_models (missing_logT_array, missing_logZ_array, example_file,
     # getting file info
     logNHI_ref = ((example_file.split('/')[-1]).split('NHI')[-1]).split('_')[0]
     z_ref = ((example_file.split('/')[-1]).split('z_')[-1]).split('.fits')[0]
-    model_path = example_file.split('/')[0]
+    model_path = example_file.split('/try')[0]
     first_part = (example_file.split('/')[-1]).split('Z')[0]
 
     data = tab.Table.read(example_file)
@@ -89,9 +89,8 @@ def create_missing_models (missing_logT_array, missing_logZ_array, example_file,
                 read_logT = int(i.split('logT')[1].split('_')[0])
                 find_T_array.append(read_logT / 100)
 
-            print(find_T_array)
-            
-            logT_array = np.sort(np.array(set(find_T_array)))
+            #print(find_T_array, name)
+            logT_array = np.sort(list(set(find_T_array)))
             valueT1, indexT1 = find_nearest(logT_array, logT)
             logT_array_dummy = np.delete(logT_array, indexT1)
             valueT2, indexT2 =find_nearest(logT_array_dummy, logT)
@@ -179,11 +178,16 @@ def get_nZT_array(model_filepath, identifier_redshift, uvb = 'KS18', uvb_Q ='18'
                 file_check = model_filepath + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}.fits'.format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
                 if not os.path.exists(file_check):
                     print('found missing model for log Z {} and log T {}'.format(Z, T))
-                    missing_Z_array.append(Z)
-                    missing_T_array.append(T)
+                    check_dummy = file_check.split('.fits')[0] + '_dummy.fits'
+                    if not os.path.exists(check_dummy):
+                        missing_Z_array.append(Z)
+                        missing_T_array.append(T)
+                    else:
+                        print('already created dummy model')
 
         # fill the missing values
-        create_missing_models(missing_T_array, missing_Z_array, example_file=list_of_files[0])
+        if len(missing_Z_array) >0:
+            create_missing_models(missing_T_array, missing_Z_array, example_file=list_of_files[0])
 
 
     # get nH array
