@@ -47,19 +47,20 @@ def run_parallel(redshift):
         print('file does not exits', final_filename)
 
         # get interpolated functions
-        try:
+        #try:
+        if 1:
             func_list = get_interp_func_nZT(model_path=model_path, ions_to_use=ions_to_use,
                 identifier_redshift=redshift)
 
-            flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
-                figname=figname + '.pdf', Z_scaling=False, parallel=False)
+        #    flat_samples, ndim = run_mcmc(data_col=data_col_log, sigma_col=sigma_col_log, interp_logf=func_list,
+        #        figname=figname + '.pdf', Z_scaling=False, parallel=False)
 
             # file to save mcmc chain
             save_file_name = figname
             np.save(save_file_name, flat_samples)
             print('*************** saved output for', redshift)
-        except Exception as e:
-            print(e)
+        #except Exception as e:
+        #    print(e)
             print('exception at ', redshift)
     else:
         print('Calculation exists, see', final_filename)
@@ -82,9 +83,11 @@ z_array= np.array([0.004409, 0.005602, 0.043318, 0.059285, 0.060158,
 #pool = mp.Pool(processes=3)
 #pool.imap_unordered(run_parallel, z_array)
 
+# test
+z_array =  np.array([0.098787])
 
 if __name__ == '__main__':
-    with mp.Pool(6) as p:
+    with mp.Pool(1) as p:
         p.map(run_parallel, z_array)
 """
 if __name__=='__main__':
