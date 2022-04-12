@@ -225,7 +225,7 @@ def get_interp_func_nZT(model_path, ions_to_use, identifier_redshift, uvb = 'KS1
                 try:
                     d = tab.Table.read(model)
                 except:
-                    print('searching for imputed dummy file (logZ, logT)', logT_ref/100 -4, logT_ref/100)
+                    print('searching for imputed dummy file (logZ, logT)', logZ_ref/100 -4, logT_ref/100)
                     model = model_path + '/try_{}_Q{}_Z{:.0f}_NHI{:.0f}_logT{:.0f}_z_{:.0f}_dummy.fits'.\
                         format(uvb, uvb_Q, logZ_ref, logNHI_ref, logT_ref, z_ref)
                     d = tab.Table.read(model)
