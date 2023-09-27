@@ -303,6 +303,9 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
 
 #Example run :
 #----give this
+
+# for photoionization
+"""
 uvb_Q=18
 cloudy_path = '/home/vikram/c17.02'
 input_file = '/home/vikram/cloudy_run/oxygen/full_NH126_Q18.in'
@@ -310,4 +313,17 @@ cloudy_run_path_and_file =[cloudy_path, input_file]
 
 # write input file and run cloudy
 ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, stop_NHI = 12.6,  log_hden= [-5, -2, 0.1],  remove_dot_out_file = False)
+write_input_and_run(cloudy_run_path_and_file, *ions, **params)
+"""
+
+# for collisional ionization
+# ---reduce the UVB by 10^6 factor
+# keep T = 5.5 k constant
+uvb_Q=18
+cloudy_path = '/home/vikram/c17.02'
+input_file = '/home/vikram/cloudy_run/oxygen/highT/full_NH126_T55.in'
+cloudy_run_path_and_file =[cloudy_path, input_file]
+
+# write input file and run cloudy
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, uvb_scale= 1e-9, T= 10**5.5, stop_NHI = 12.6,  log_hden= [-5, -2, 0.1],  remove_dot_out_file = False)
 write_input_and_run(cloudy_run_path_and_file, *ions, **params)
