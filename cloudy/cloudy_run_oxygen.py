@@ -305,9 +305,9 @@ def store_table(ions, output_file, stop_NHI = 1e12, tolerance =0.01,  remove_dot
 #----give this
 uvb_Q=18
 cloudy_path = '/home/vikram/c17.02'
-input_file = '/home/vikram/cloudy_run/oxygen/try.in'
+input_file = '/home/vikram/cloudy_run/oxygen/full_NH126_Q18.in'
 cloudy_run_path_and_file =[cloudy_path, input_file]
 
 # write input file and run cloudy
-ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, log_hden= [-5, -3, 1],  remove_dot_out_file = False)
+ions, params = cloudy_params_defaults(uvb_Q=uvb_Q, stop_NHI = 12.6,  log_hden= [-5, -2, 0.1],  remove_dot_out_file = False)
 write_input_and_run(cloudy_run_path_and_file, *ions, **params)
